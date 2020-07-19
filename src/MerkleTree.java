@@ -1,3 +1,3 @@
-public class MerkelTree{
+public class MerkleTree{
 	
 }
