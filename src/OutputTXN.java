@@ -1,4 +1,4 @@
 public class OutputTXN{
-	private int amount;
-	private String pubKeyHash;
+	private float amount;
+	private String scriptPubKey;
 }
