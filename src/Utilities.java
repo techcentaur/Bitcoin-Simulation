@@ -1,4 +1,5 @@
 import org.apache.commons.codec.digest.DigestUtils;
+import java.security.*;
 
 public class Utilities{
 	public String static getSHA256hash(String s){
@@ -14,4 +15,5 @@ public class Utilities{
 		}
 		return new String(data);
 	}
+
 }
