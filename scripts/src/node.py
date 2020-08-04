@@ -3,16 +3,19 @@ import utils
 class Node:
     def __init__(self):
         self.keys = utils.generate_ec_key_pairs()
-        self.address = base58encode(self.keys['public'])
-
+    
+        hash160 = utils.hash160(self.keys['public'])
+        self.address = utils.Base58.base58encode(hash160)
 
     def get_blockchain(self):
         self.blockchain = network.get_blockchain()
+        self.create_UTXO_database()
 
-    def get_UTXO_array(self):
-        # use self.blockchain
-        # TRIE DS
-        pass
+    def create_UTXO_database(self):
+        # database is of TRIE DS
+        
+        
+
 
     def send_txn_over_network(self, txn):
         network.distribute_txn(txn)

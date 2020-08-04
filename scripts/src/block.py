@@ -20,3 +20,6 @@ class Block:
     def get_merkle_root_hash(self):
         root_hash = ""
         return root_hash
+
+    def create_genesis_block(self):
+        pass
