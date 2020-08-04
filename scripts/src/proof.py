@@ -8,17 +8,22 @@ class Work:
 class Proof:
     target_threshold = 5
     def __init__(self):
-        self.target_hash = hex(1, 10) >> (256 - target_threshold)
+        self.target_hash = "0000001000000000000000000000000000" <- hex string
 
     def get_work(self, block):
         pass
 
     def run(self):
-        for nonce in range(0, sys.maxsize):
-            _hash = get_hash(nonce)
+        for nonce in range(0, sys.maxsize): # 2^63-1
+            _hash = self.get_hash(nonce)
             if _hash < self.target_hash:
                 return Work(nonce, _hash)
 
     def get_hash(self, nonce):
-        double_hash = hash(hash(block.get_block_header(nonce)))
-        return base58encode(double_hash)
+        # hash function TBI
+        double_hash = hash(hash(block.get_block_data(nonce)))
+        return double_hash
+
+if __name__ == '__main__':
+    p = Proof()
+    print(p.target_hash)
