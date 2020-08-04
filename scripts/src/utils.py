@@ -11,6 +11,15 @@ def generate_ec_key_pairs():
             }
     return keys
 
+def sign_key(public, message):
+    return public.sign(b'{}'.format(message))
+
+# convert to little-endian format 
+def reverse_bytes(string):
+    ba = bytearray.fromhex(string).reverse()
+    rev = (''.join(format(x, '02x') for x in ba)).upper()
+    return rev
+
 if __name__ == '__main__':
     a = generate_ec_key_pairs()
     print(a)
