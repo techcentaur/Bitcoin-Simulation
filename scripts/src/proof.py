@@ -21,7 +21,7 @@ class Proof:
 
     def get_hash(self, nonce):
         # hash function TBI
-        double_hash = hash(hash(block.get_block_data(nonce)))
+        double_hash = hash(hash(block.get_serialized_block_header(nonce)))
         return double_hash
 
 if __name__ == '__main__':

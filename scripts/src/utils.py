@@ -16,10 +16,13 @@ def sign_key(public, message):
 
 # convert to little-endian format 
 def reverse_bytes(string):
-    ba = bytearray.fromhex(string).reverse()
+    ba = bytearray.fromhex(string)
+    ba.reverse()
     rev = (''.join(format(x, '02x') for x in ba)).upper()
     return rev
 
 if __name__ == '__main__':
-    a = generate_ec_key_pairs()
-    print(a)
+    # a = generate_ec_key_pairs()
+    # print(a)
+    x = reverse_bytes("520a")
+    print(x)
