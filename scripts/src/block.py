@@ -6,6 +6,7 @@ class Block:
     def __init__(self):
         self.prev_block_hash = None
         self.txn_pool = []
+        self.nonce = None
 
     def add_txn(self, txn):
         self.txn_pool.append(txn)
