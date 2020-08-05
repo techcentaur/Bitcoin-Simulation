@@ -7,6 +7,8 @@ class Block:
         self.prev_block_hash = None
         self.txn_pool = []
         self.nonce = None
+        self.hash = None
+        self.prev_block = None
 
     def add_txn(self, txn):
         self.txn_pool.append(txn)
