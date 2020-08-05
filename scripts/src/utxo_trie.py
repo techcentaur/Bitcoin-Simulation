@@ -1,7 +1,7 @@
 class UTXOTrieNode:
     def __init__(self):
         self.children = {}
-        self.end_list = []
+        self.end_list = {}
 
     def __repr__(self):
         s = ""
@@ -19,7 +19,8 @@ class UTXOTrie:
             node = self.root_node
 
         if index == self.depth:
-            node.end_list.append((txn.txnid, txn.vout))
+            node.end_list[txn.txnid] = {'vout': [x for x in range(len(txn.out_txns))],
+            'txn': txn}
             return
 
         if txn.txnid[index] not in node.children:
@@ -27,31 +28,51 @@ class UTXOTrie:
 
         self.insert(txn, node.children[txn.txnid[index]], index+1)
 
-    def search(self, txn, node=None, index=0):
+    def search(self, txnid, vout, node=None, index=0):
         if index == 0:
             node = self.root_node
 
         if index == self.depth:
-            return True if (txn.txnid, txn.vout) in node.end_list else False
-
-        if txn.txnid[index] not in node.children:
+            if txnid in node.end_list:
+                if vout in node.end_list[txnid]['vout']:
+                    return True
             return False
 
-        return self.search(txn, node.children[txn.txnid[index]], index+1)
+        if txnid[index] not in node.children:
+            return False
 
-    def remove(self, txn, node=None, index=0):
+        return self.search(txnid, vout, node.children[txnid[index]], index+1)
+
+    def get(self, txnid, node=None, index=0):
         if index == 0:
             node = self.root_node
 
         if index == self.depth:
-            if (txn.txnid, txn.vout) in node.end_list:
-                node.end_list.remove((txn.txnid, txn.vout))
+            if txnid in node.end_list:
+                return node.end_list[txnid]['txn']
+            return False
+
+        if txnid[index] not in node.children:
+            return False
+
+        return self.get(txnid, node.children[txnid[index]], index+1)
+
+    def remove(self, txnid, vout, node=None, index=0):
+        if index == 0:
+            node = self.root_node
+
+        if index == self.depth:
+            if txnid in node.end_list:
+                if vout in node.end_list[txnid]['vout']:
+                    node.end_list[txnid]['vout'].remove(vout)
+                    if len(node.end_list[txnid]['vout']) == 0:
+                        node.end_list[txnid]['txn'] = None
             return
 
-        if txn.txnid[index] not in node.children:
+        if txnid[index] not in node.children:
             return
 
-        self.remove(txn, node.children[txn.txnid[index]], index+1)
+        self.remove(txnid, vout, node.children[txnid[index]], index+1)
 
     def print(self, node=None, index=0):
         if index == 0:
@@ -66,9 +87,14 @@ class UTXOTrie:
             self.print(node.children[key], index+1)
 
 class T:
-    def __init__(self, txnid, vout):
+    def __init__(self, txnid, out):
         self.txnid = txnid
-        self.vout = vout 
+        self.out_txns = [1,2,3]
+
+class P:
+    def __init__(self, txnid, out):
+        self.txnid = txnid
+        self.vout = out
 
 if __name__ == '__main__':
     # testing that if the data structure works
@@ -85,13 +111,15 @@ if __name__ == '__main__':
     
     u.print()
 
-    print(u.search(T("5a2346", 1)))
-    print(u.search(T("acx26D", 2)))
-    print(u.search(T("xzx26D", 0)))
+    print(u.search("5a2346", 1))
+    print(u.search("acx26D", 2))
+    print(u.search("xzx26D", 0))
 
-    u.remove(T("ac226D", 0))
-    u.remove(T("ab2356", 2))
-    u.remove(T("5c2356", 2))
-    (u.remove(T("xzx26D", 0)))
+    u.remove("ac226D", 0)
+    u.remove("ab2356", 2)
+    u.remove("5c2356", 2)
+    (u.remove("xzx26D", 0))
+
+    print(u.get("5a2346"))
 
     u.print()

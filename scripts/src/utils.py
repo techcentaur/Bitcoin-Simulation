@@ -3,6 +3,7 @@ from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import hashlib
 
 def generate_ec_key_pairs():
+    """generate ecdsa key pairs"""
     private = SigningKey.generate(curve=SECP256k1)
     public = private.verifying_key
     
@@ -12,11 +13,9 @@ def generate_ec_key_pairs():
             }
     return keys
 
-def sign_key(public, message):
-    return public.sign(b'{}'.format(message))
-
-# convert to little-endian format 
 def reverse_bytes(string):
+    """reverse bytes: given big-endian change to little-endian and vice-versa"""
+
     ba = bytearray.fromhex(string)
     ba.reverse()
     rev = (''.join(format(x, '02x') for x in ba)).upper()
@@ -24,6 +23,8 @@ def reverse_bytes(string):
 
 
 def hash160(string):
+    """given string -> return hash160 (first sha256 then ripemd160)"""
+
     hexstr = string.decode('hex')
     hash160 = hashlib.new('ripemd160', hashlib.new('sha256', hexstr).digest()).digest()
     hash160hex = hash160.encode('hex')
@@ -35,6 +36,7 @@ class Base58:
 
     @staticmethod
     def base58encode(string):
+        """encode string to base58"""
         num = int(string, 16)
         
         output = ""
@@ -51,6 +53,8 @@ class Base58:
 
     @staticmethod    
     def base58decode(string):
+        """decode string to base58"""
+
         size = len(string)
         value = 0
         for i, s in enumerate(string):
