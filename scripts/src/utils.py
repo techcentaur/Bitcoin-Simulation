@@ -22,6 +22,7 @@ def reverse_bytes(string):
     rev = (''.join(format(x, '02x') for x in ba)).upper()
     return rev
 
+
 def hash160(string):
     hexstr = string.decode('hex')
     hash160 = hashlib.new('ripemd160', hashlib.new('sha256', hexstr).digest()).digest()
@@ -56,14 +57,45 @@ class Base58:
             value += Base58.decode[string[size-i-1]] * (58**i)
         return hex(value)[2:]
 
+def double_sha256(text):
+    hash1 = hashlib.sha256(str.encode(text)).hexdigest()
+    hash2 = hashlib.sha256(str.encode(hash1)).hexdigest()
+    return hash2
+
+def calculate_merkle_root(hashes, arity):
+    if len(hashes) == 1:
+        return hashes[0]
+    remaining = arity - len(hashes) % arity
+    for i in range(remaining):
+        hashes.append(hashes[-1])
+
+    new_hashes = []
+    for i in range(0, len(hashes), arity):
+        combined_hash = "".join(hashes[i:i+arity])
+        new_hashes.append(double_sha256(combined_hash))
+
+    return calculate_merkle_root(new_hashes, arity)
+
+
 if __name__ == '__main__':
     # a = generate_ec_key_pairs()
     # print(a)
     # x = reverse_bytes("520a")
 
-    s = "abc71284bc7af72"
-    t = "2o9upwhcJCR"
-    x = Base58.base58encode(s)
-    y = Base58.base58decode(t)
-    print(x)
-    print(y)
+    # s = "abc71284bc7af72"
+    # t = "2o9upwhcJCR"
+    # x = Base58.base58encode(s)
+    # y = Base58.base58decode(t)
+    # print(x)
+    # print(y)
+
+    hashes = [
+        'aa',
+        'bb',
+        'cc',
+        'dd',
+        'ee',
+        'ff',
+        '22'
+    ]
+    print(calculate_merkle_root(hashes, 3))
