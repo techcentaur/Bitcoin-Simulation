@@ -23,3 +23,11 @@ class ScriptInterpreter:
                             hashfunc=sha256)
         # message should be of class bytes
         return (vk.verify(bytes.fromhex(signature), message)):
+
+    @staticmethod
+    def get_digital_signature(message, private_key):
+        """ message should be of class bytes
+            private_key is a hex string
+        """
+        signature = private_key.sign(message)
+        return signature
