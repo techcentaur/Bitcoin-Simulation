@@ -32,12 +32,10 @@ class Node:
 
     def receive_txn(txn):
         self.blockchain.verify_txn(txn)
-
         self.current_block.add_txn(txn)
 
     def calculate_proof(self):
         self.current_block = Block()
-
         work = Proof(self.current_block)
         network.send_block(self.current_block)
 

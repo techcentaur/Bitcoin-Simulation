@@ -1,14 +1,16 @@
 from input_txn import InputTXN 
 from output_txn import OutputTXN 
+from utils import double_sha256
 
 class TXN:
     def __init__(self, inp_txns, out_txns):
         self.inp_txns = inp_txns
         self.out_txns = out_txns
+        self.create_txid()
 
     def create_txid(self):
-        data = get_txn_data()
-        self.txid = reverse_bytes(hash(hash(data)))
+        data = self.get_txn_data()
+        self.txid = double_sha256(data)
 
     def get_txn_data(self):
         inp_count = hex(len(self.inp_txns))[2:]
@@ -35,6 +37,5 @@ if __name__ == "__main__":
 	print(inptxn.get_txn_input_data())
 	print(output_txn.get_txn_output_data())
 	txn = TXN([inptxn], [output_txn])
-	print(txn.get_txn_data())
-
+	print(txn.txid)
 

@@ -8,7 +8,11 @@ class Work:
 class Proof:
     target_threshold = 5
     def __init__(self):
-        self.target_hash = "0000001000000000000000000000000000" <- hex string
+        self.target_hash = hex(int("0"*target_threshold + "1" + "0"*(255 - target_threshold), 2))[2:]
+
+        self.target_hash = (64 - len(self.target_hash))*'0' + self.target_hash
+
+        
 
     def get_work(self, block):
         pass
