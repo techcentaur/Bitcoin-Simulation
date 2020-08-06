@@ -2,9 +2,10 @@ from input_txn import InputTXN
 from output_txn import OutputTXN 
 
 class TXN:
-    def __init__(self, inp_txns, out_txns):
+    def __init__(self, inp_txns, out_txns, txn_hash=None):
         self.inp_txns = inp_txns
         self.out_txns = out_txns
+        self.txnid = txn_hash
 
     def create_txid(self):
         data = get_txn_data()

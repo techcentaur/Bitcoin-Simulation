@@ -5,10 +5,18 @@ import proof
 class Block:
     def __init__(self):
         self.txn_pool = []
-        self.nonce = None
-        self.hash = None
-        self.prev_block_hash = None
+        self.nonce = 0
+        self.hash = ""
+        self.prev_block_hash = ""
+        
         # self.prev_block = None
+        self.waiting_txn_pool = []
+
+    def update(self, _hash, prev_block_hash, txns, nonce):
+        self.hash = _hash 
+        self.prev_block_hash = prev_block_hash
+        self.txn_pool = txns
+        self.nonce = nonce
 
     def add_txn(self, txn):
         self.txn_pool.append(txn)
@@ -24,5 +32,11 @@ class Block:
         root_hash = ""
         return root_hash
 
-    def create_genesis_block(self):
-        pass
+    @staticmethod
+    def create_genesis_block(coinbase_txn):
+        block = Block()
+        block.update("", "0"*64, [coinbase_txn], 0)
+
+        # mine proof of work of block
+        return block
+

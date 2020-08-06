@@ -54,7 +54,7 @@ class Blockchain:
                 if not ScriptInterpreter.verify_pay_to_pubkey_hash(
                     inp_txn.signature_script,
                     output_txn.script_pub_key,
-                    message # ? serialized txn
+                    txn.get_txn_data()
                     ):
                     return False
 
@@ -78,10 +78,22 @@ class Blockchain:
             return False
         return True
 
+    def update_waiting_txn_pool(self, block):
+        txn_hashmap = {}
+        for txn in block.txn_pool:
+            txn_hashmap[txn.txnid] = True
+
+        remove_pool = []
+        for txn in self.node.waiting_txn_pool:
+            if txn in txn_hashmap:
+                remove_pool.append(txn)
+
+        for txn in remove_pool:
+            self.node.waiting_txn_pool.remove(txn)
 
     def insert_block_in_chain(self, block):
         """
-        TODO: For each transaction in the block, delete any matching transaction from the transaction pool
+        - For each transaction in the block, delete any matching transaction from the transaction pool
         - add block to chain and stabilize if necessary
         """
 
@@ -97,6 +109,8 @@ class Blockchain:
                     self.UTXOdb.remove_by_txnid(inp_txn.txnid, inp_txn.vout)
             for txn in block.txn_pool:
                 self.UTXOdb.add_by_txn(txn)
+
+            self.update_waiting_txn_pool(block)
         else:
             # new block is in side chain
             reorg_dict = self.stabilize.add(block)
