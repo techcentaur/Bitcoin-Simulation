@@ -30,6 +30,15 @@ class Block:
         txn_hash = [txn.txid for txn in self.txns]
         return calculate_merkle_root(txn_hash, arity)
 
+    def create_copy(self):
+        txn_copy = [txn.create_copy() for txn in self.txns]
+        new_block = Block(txn_copy, self.prev_block_hash)
+        new_block.nonce = self.nonce
+        new_block.hash = self.hash
+        new_block.bits = self.bits
+        new_block.merkle_root = self.merkle_root
+
+        
     @staticmethod
     def create_genesis_block(coinbase_txn):
         block = Block()

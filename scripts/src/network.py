@@ -12,7 +12,12 @@ class Network:
     def distribute_txn(self, txn, src_node):
         for node in self.nodes:
             if node != src_node:
-                node.receive_txn(txn)
+                node.send_message(("txn", temp_txn))
+
+    def distribute_block(self, block, src_node):
+        for node in self.nodes:
+            if node != src_node:
+                node.send_message(("block", block))
 
 if __name__ == '__main__':
     net = Network()

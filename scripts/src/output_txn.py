@@ -12,6 +12,8 @@ class OutputTXN:
     	pubkey_size = hex(len(self.script_pub_key)//2)[2:]
     	return reverse_amount + pubkey_size + self.script_pub_key
 
+    def create_copy(self):
+    	return OutputTXN(amount, script_pub_key)
 
 if __name__ == "__main__":
 	output_txn = OutputTXN(314, "abcdef123456")

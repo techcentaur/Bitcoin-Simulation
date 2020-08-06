@@ -1,5 +1,6 @@
 import utils
 from blockchain import Blockchain 
+from colletion import deque
 
 class Node:
     def __init__(self, network, blockchain=None):
@@ -7,6 +8,7 @@ class Node:
         hash160 = utils.hash160(self.keys['public'])
         self.address = utils.Base58.base58encode(hash160)
         self.txn_pool = []
+        self.messages = deque()
         self.get_blockchain()
         while True:
             self.calculate_proof()
@@ -34,7 +36,7 @@ class Node:
                 database_UTXO.insert(outtxn)
 
     def send_txn_over_network(self, txn):
-        network.distribute_txn(txn)
+        network.distribute_txn(txn, self)
 
     def receive_txn(txn):
         self.blockchain.verify_txn(txn)
@@ -43,12 +45,32 @@ class Node:
     def calculate_proof(self):
         self.current_block = Block([txn for txn in self.txn_pool], self.blockchain.prev_block_hash)
         self.proof = Proof(self.current_block)
-        work = proof.run()
+        work = 0
+        while True:
+            work = proof.run(work)
+            if type(work) == int:
+                check_messages()
+            else:
+                break
+
         if(work == None):
             return
         self.current_block.nonce = work.nonce
         self.current_block.hash = work.hash
-        network.send_block(self.current_block)
+        network.distribute_block(self.current_block, self)
+
+    def check_messages(self):
+        while len(self.messages):
+            msg_type, msg = self.messages.popleft()
+            if msg_type == "txn":
+                txn = msg.create_copy()
+                receive_txn(txn)
+            else:
+                block = msg.create_copy()
+                recieve_block(block)
+
+    def send_message(self, message):
+        self.messages.append(message)
 
     def recieve_block(self, block):
         """

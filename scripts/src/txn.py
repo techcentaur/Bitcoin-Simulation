@@ -31,6 +31,11 @@ class TXN:
 
         return "".join(datas)
 
+    def create_copy(self):
+    	inp_copy = [inp.create_copy() for inp in self.inp_txns]
+    	out_copy = [out.create_copy() for out in self.out_txns]
+    	return TXN(inp_copy, out_copy)
+
 if __name__ == "__main__":
 	inptxn = InputTXN("123abcd4092e",2, "aedfasdfsdfe")
 	output_txn = OutputTXN(314, "abcdef123456")

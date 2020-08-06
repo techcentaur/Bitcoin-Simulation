@@ -14,6 +14,9 @@ class InputTXN:
     	scriptsig_size = hex(len(self.signature_script)//2)[2:]
     	return reverse_txid + reverse_vout + scriptsig_size + self.signature_script + "ffffffff"
 
+    def create_copy(self):
+    	return InputTXN(self.txnid, self.vout, self.signature_script)
+    	
 
 if __name__ == "__main__":
 	inptxn = InputTXN("123abcd4092e",2, "aedfasdfsdfe")

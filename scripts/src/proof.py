@@ -7,19 +7,22 @@ class Work:
 
 class Proof:
     def __init__(self, block):
+        self.quit = False
         self.block = block
         self.target_hash = hex(int("0"*block.bits + "1" + "0"*(255 - block.bits), 2))[2:]
         self.target_hash = (64 - len(self.target_hash))*'0' + self.target_hash
 
+    def run(self, start):
+        for nonce in range(start+1, sys.maxsize): # 2^63-1
+            if(quit):
+                return None 
 
-    def get_work(self, block):
-        pass
-
-    def run(self):
-        for nonce in range(0, sys.maxsize): # 2^63-1
             _hash = self.get_hash(nonce)
             if _hash < self.target_hash:
                 return Work(nonce, _hash)
+
+            if(nonce % 1000 == 0):
+                return nonce
 
     def get_hash(self, nonce):
         # hash function TBI
