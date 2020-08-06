@@ -14,7 +14,7 @@ class UTXOTrie:
         self.depth = depth
         self.root_node = UTXOTrieNode()
 
-    def insert(self, txn, node=None, index=0):
+    def add_by_txn(self, txn, node=None, index=0):
         if index == 0:
             node = self.root_node
 
@@ -26,9 +26,23 @@ class UTXOTrie:
         if txn.txnid[index] not in node.children:
             node.children[txn.txnid[index]] = UTXOTrieNode()
 
-        self.insert(txn, node.children[txn.txnid[index]], index+1)
+        self.add_by_txn(txn, node.children[txn.txnid[index]], index+1)
 
-    def search(self, txnid, vout, node=None, index=0):
+    def add_by_txnid(self, txnid, vout, node=None, index=0):
+        if index == 0:
+            node = self.root_node
+
+        if index == self.depth:
+            if txnid in node.end_list:
+                node.end_list[txnid]['vout'].append(vout)
+            return
+
+        if txnid[index] not in node.children:
+            node.children[txnid[index]] = UTXOTrieNode()
+
+        self.add_by_txnid(txnid, vout, node.children[txnid[index]], index+1)
+
+    def search_by_txnid(self, txnid, vout, node=None, index=0):
         if index == 0:
             node = self.root_node
 
@@ -43,7 +57,7 @@ class UTXOTrie:
 
         return self.search(txnid, vout, node.children[txnid[index]], index+1)
 
-    def get(self, txnid, node=None, index=0):
+    def get_txn_by_txnid(self, txnid, node=None, index=0):
         if index == 0:
             node = self.root_node
 
@@ -55,9 +69,9 @@ class UTXOTrie:
         if txnid[index] not in node.children:
             return False
 
-        return self.get(txnid, node.children[txnid[index]], index+1)
+        return self.get_by_txnid(txnid, node.children[txnid[index]], index+1)
 
-    def remove(self, txnid, vout, node=None, index=0):
+    def remove_by_txnid(self, txnid, vout, node=None, index=0):
         if index == 0:
             node = self.root_node
 
@@ -65,14 +79,24 @@ class UTXOTrie:
             if txnid in node.end_list:
                 if vout in node.end_list[txnid]['vout']:
                     node.end_list[txnid]['vout'].remove(vout)
-                    if len(node.end_list[txnid]['vout']) == 0:
-                        node.end_list[txnid]['txn'] = None
             return
 
         if txnid[index] not in node.children:
             return
 
-        self.remove(txnid, vout, node.children[txnid[index]], index+1)
+        self.remove_by_txnid(txnid, vout, node.children[txnid[index]], index+1)
+
+    def remove_by_txn(self, txn, node=None, index=0):
+        if index == 0:
+            node = self.root_node
+        if index == self.depth:
+            if txn.txnid in node.end_list:
+                node.end_list.pop(txn.txnid, None)
+            return
+        if txn.txnid[index] not in node.children:
+            return
+
+        self.remove_by_txn(txn, node.children[txn.txnid[index]], index+1)
 
     def print(self, node=None, index=0):
         if index == 0:
@@ -86,40 +110,42 @@ class UTXOTrie:
             print(key, end=" -> ")
             self.print(node.children[key], index+1)
 
-class T:
-    def __init__(self, txnid, out):
-        self.txnid = txnid
-        self.out_txns = [1,2,3]
+class In:
+    def __init__(self, t, o):
+        self.txnid = t
+        self.vout = o
 
-class P:
-    def __init__(self, txnid, out):
-        self.txnid = txnid
-        self.vout = out
+class Out:
+    def __init__(self):
+        pass
+
+class Txn:
+    def __init__(self, i, o, h):
+        self.inp_txns = i
+        self.out_txns = o
+        self.txnid = h
 
 if __name__ == '__main__':
-    # testing that if the data structure works
+    # testing
     u = UTXOTrie(depth=2)
-    u.insert(T("ab2356", 0))
-    u.insert(T("ab2356", 1))
-    u.insert(T("ab2356", 2))
-    u.insert(T("ac2356", 2))
-    u.insert(T("ac226D", 0))
-    u.insert(T("acx26D", 2))
-    u.insert(T("3c2356", 3))
-    u.insert(T("5c2356", 2))
-    u.insert(T("5a2346", 1))
-    
-    u.print()
+    txn = (Txn([In("12acf9", 1), In("12abb9", 2)],
+        [Out(), Out(), Out()],
+        "14fa21"))
+    u.add_by_txn(txn)
 
-    print(u.search("5a2346", 1))
-    print(u.search("acx26D", 2))
-    print(u.search("xzx26D", 0))
+    txn = (Txn([In("937acf", 1), In("124b7b", 0)],
+        [Out(), Out(), Out()],
+        "1212aa"))
+    u.add_by_txn(txn)
 
-    u.remove("ac226D", 0)
-    u.remove("ab2356", 2)
-    u.remove("5c2356", 2)
-    (u.remove("xzx26D", 0))
+    txn = (Txn([In("4212aa", 1), In("4212aa", 0)],
+        [Out(), Out(), Out()],
+        "233c42"))
+    u.add_by_txn(txn)
+    u.add_by_txnid("233c42", 3)
 
-    print(u.get("5a2346"))
+    # u.remove_by_txnid("233c41", 0)
+    # u.remove_by_txn(txn)
 
+    # for i in txn.inp_txns:
     u.print()

@@ -1,30 +1,45 @@
 import hashlib
 
 from script_interpreter import ScriptInterpreter
+from chain_stabilize import Stabilize
 
 class Blockchain:
-    def __init__(self, UTXOdb):
+    def __init__(self, UTXOdb, network, node):
         self.UTXOdb = UTXOdb
+        self.network = network
+        self.node = node
+
         self.prev_block_hash = None
         self.last_block_pointer = None
+
+        self.stabilize = Stabilize(orphan_threshold=3)
+
+    def add_block(self, block):
+        if not self.verify_block(block):
+            return False
+        self.insert_block_in_chain(block)
 
     def verify_block(self, block):
         """
         1. hash (block header + nonce) to see if the hash is correct
-        2. input txns exist as UTXO 
+        - also verify merkel hash
+        2. input txns should exist as UTXO 
             2.1 check scripting signatures and pubkeyscript
             2.2 diff of output and input amount == reward in coinbase txn of block
         this means: block is correct.
         """
 
         serial = block.get_serialized_block_header(block.nonce)
-        serial_hex = serial.decode('hex')
         
-        hash_str = hashlib.new('sha256', hashlib.new('sha256', serial_hex).digest()).digest()
-        hash_hex = hash_str.encode('hex')
+        hash_hex = hashlib.new('sha256',
+            hashlib.new('sha256', serial.decode('hex')).digest()).digest().encode('hex')
 
         # verifying hash of block
         if not (hash_hex == block.hash):
+            return False
+
+        # TODO: verify merkle hash here
+        if not (block.merkle_root_hash == block.get_merkle_root_hash()):
             return False
 
         # block.txn_pool[0] is coinbase [ASSUMPTION]
@@ -32,19 +47,18 @@ class Blockchain:
         for txn in block.txn_pool[1:]:
             input_amount = 0.0
             for inp_txn in txn.inp_txns:
-                if not self.UTXOdb.search(inp_txn.txnid, inp_txn.vout):
+                if not self.UTXOdb.search_by_txnid(inp_txn.txnid, inp_txn.vout):
                     return False
         
-                output_txn = self.UTXOdb.get(inp_txn.txnid).out_txns[inp_txn.vout]
+                output_txn = self.UTXOdb.get_txn_by_txnid(inp_txn.txnid).out_txns[inp_txn.vout]
                 if not ScriptInterpreter.verify_pay_to_pubkey_hash(
                     inp_txn.signature_script,
                     output_txn.script_pub_key,
-                    message
+                    txn.get_txn_data()
                     ):
                     return False
 
                 input_amount += output_txn.amount 
-                self.UTXOdb.remove(inp_txn.txnid, inp_txn.vout)
 
             output_amount = 0.0
             for out_txn in txn.out_txns:
@@ -64,41 +78,76 @@ class Blockchain:
             return False
         return True
 
-    def add_block(self, block):
-        """add block to chain and add outputs to UTXOs
+    def update_waiting_txn_pool(self, block):
+        txn_hashmap = {}
+        for txn in block.txn_pool:
+            txn_hashmap[txn.txnid] = True
+
+        remove_pool = []
+        for txn in self.node.waiting_txn_pool:
+            if txn in txn_hashmap:
+                remove_pool.append(txn)
+
+        for txn in remove_pool:
+            self.node.waiting_txn_pool.remove(txn)
+
+    def insert_block_in_chain(self, block):
+        """
+        - For each transaction in the block, delete any matching transaction from the transaction pool
+        - add block to chain and stabilize if necessary
         """
 
-        # set (blockchain) prev block hash and (block) prev pointer
-        self.prev_block_hash = block.hash
-        block.prev_block = self.last_block_pointer
-        self.last_block_pointer = block
+        if block.prev_block_hash == self.prev_block_hash:
+            # new block is in main chain
+            self.prev_block_hash = block.hash
+            reorg_dict = self.stabilize.add(block)
+            if reorg_dict:
+                print("[?] Error: Chain can't be reorganized when new block adds in longest chain")
+            
+            for txn in block.txn_pool[1:]:
+                for inp_txn in txn.inp_txns:
+                    self.UTXOdb.remove_by_txnid(inp_txn.txnid, inp_txn.vout)
+            for txn in block.txn_pool:
+                self.UTXOdb.add_by_txn(txn)
 
-        # add outputs to UTXOdb
-        for txn in block.txn_pool:
-            self.UTXOdb.insert(out_txn)
+            self.update_waiting_txn_pool(block)
+        else:
+            # new block is in side chain
+            reorg_dict = self.stabilize.add(block)
+            if reorg_dict:
+                # need reorganization
+                self.reorganize_blocks(reorg_dict)
+            else:
+                # just add block (already added) in side chain and don't change UTXOdb
+                pass
 
+    def reorganize_blocks(self, reorg_dict):
+        # removing blocks in back-track of prev main chain
+        for block in reorg_dict['blocks_to_remove']:
+            for txn in block.txn_pool:
+                self.UTXOdb.remove_by_txn(txn)
 
-    def self_stabilise(self):
-        # all 3 cases from
-        # https://en.bitcoin.it/wiki/Protocol_rules#.22tx.22_messages
-        pass
+            for txn in block.txn_pool[1:]:
+                for inp_txn in txn.inp_txns:
+                    self.UTXOdb.add_by_txnid(inp_txn.txnid, inp_txn.vout)
 
-    def verify_txn(self, txn):
-        if Blockchain.is_coinbase(txn):
-            return True
-        # verify all inputs and amount
-        
-    def get_all_UTXOs(self):
-        pass
+        # adding blocks in front-track of new main chain
+        for block in reorg_dict['blocks_to_add']:
+            for txn in block.txn_pool[1:]:
+                for inp_txn in txn.inp_txns:
+                    self.UTXOdb.remove_by_txnid(inp_txn.txnid, inp_txn.vout)
+            
+            for txn in block.txn_pool:
+                self.UTXOdb.add_by_txn(txn)
 
-    def find_txn(self, txnid):
-        pass
-
-    def verify_txns_in_block(self, block):
-        for txn in block.txn_pool:
-            for inptxn in txn.inp_txns:
-                if not database_UTXO.search(inptxn):
-                    return False
-
-
-
+    def orphan_txns_redistribute(self):
+        o_blocks = self.stabilize.check_for_orphan_nodes()
+        if o_blocks:
+            for block in o_blocks:
+                for txn in block.txn_pool:
+                    for inp_txn in txn.inp_txns:
+                        if not self.UTXOdb.search_by_txnid(inp_txn.txnid, inp_txn.vout):
+                            break
+                    else:
+                        # redistribute on network
+                        self.network.distribute_txn(txn, self.node)
