@@ -19,6 +19,31 @@ class Blockchain:
             return False
         self.insert_block_in_chain(block)
 
+    def verify_txn(self, txn):
+        input_amount = 0
+        for inp_txn in txn.inp_txns:
+            if not self.UTXOdb.search_by_txnid(inp_txn.txnid, inp_txn.vout):
+                return False
+    
+            output_txn = self.UTXOdb.get_txn_by_txnid(inp_txn.txnid).out_txns[inp_txn.vout]
+            if not ScriptInterpreter.verify_pay_to_pubkey_hash(
+                inp_txn.signature_script,
+                output_txn.script_pub_key,
+                txn.get_txn_data()
+                ):
+                return False
+
+            input_amount += output_txn.amount 
+
+        output_amount = 0.0
+        for out_txn in txn.out_txns:
+            output_amount += out_txn.amount
+
+        if output_amount > input_amount:
+            return False
+
+        return True
+
     def verify_block(self, block):
         """
         1. hash (block header + nonce) to see if the hash is correct
