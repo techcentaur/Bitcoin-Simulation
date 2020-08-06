@@ -67,9 +67,9 @@ class Blockchain:
         if not (block.merkle_root_hash == block.get_merkle_root_hash()):
             return False
 
-        # block.txn_pool[0] is coinbase [ASSUMPTION]
+        # block.txns[0] is coinbase [ASSUMPTION]
         coinbase_future_reward = 0.0
-        for txn in block.txn_pool[1:]:
+        for txn in block.txns[1:]:
             input_amount = 0.0
             for inp_txn in txn.inp_txns:
                 if not self.UTXOdb.search_by_txnid(inp_txn.txnid, inp_txn.vout):
@@ -94,7 +94,7 @@ class Blockchain:
             coinbase_future_reward += (input_amount - output_amount)
 
         # verify coinbase
-        coinbase = block.txn_pool[0]
+        coinbase = block.txns[0]
         if not ((len(coinbase.inputs()) == 1) and (int(coinbase.inputs[0].txnid, 16) == 0)
                         and (int(coinbase.inputs[0].vout, 16) == -1)
                         and (len(coinbase.out_txns) == 1)):
@@ -103,18 +103,18 @@ class Blockchain:
             return False
         return True
 
-    def update_waiting_txn_pool(self, block):
+    def update_txn_pool(self, block):
         txn_hashmap = {}
-        for txn in block.txn_pool:
+        for txn in block.txns:
             txn_hashmap[txn.txnid] = True
 
         remove_pool = []
-        for txn in self.node.waiting_txn_pool:
+        for txn in self.node.txn_pool:
             if txn in txn_hashmap:
                 remove_pool.append(txn)
 
         for txn in remove_pool:
-            self.node.waiting_txn_pool.remove(txn)
+            self.node.txn_pool.remove(txn)
 
     def insert_block_in_chain(self, block):
         """
@@ -129,13 +129,13 @@ class Blockchain:
             if reorg_dict:
                 print("[?] Error: Chain can't be reorganized when new block adds in longest chain")
             
-            for txn in block.txn_pool[1:]:
+            for txn in block.txns[1:]:
                 for inp_txn in txn.inp_txns:
                     self.UTXOdb.remove_by_txnid(inp_txn.txnid, inp_txn.vout)
-            for txn in block.txn_pool:
+            for txn in block.txns:
                 self.UTXOdb.add_by_txn(txn)
 
-            self.update_waiting_txn_pool(block)
+            self.update_txn_pool(block)
         else:
             # new block is in side chain
             reorg_dict = self.stabilize.add(block)
@@ -149,27 +149,27 @@ class Blockchain:
     def reorganize_blocks(self, reorg_dict):
         # removing blocks in back-track of prev main chain
         for block in reorg_dict['blocks_to_remove']:
-            for txn in block.txn_pool:
+            for txn in block.txns:
                 self.UTXOdb.remove_by_txn(txn)
 
-            for txn in block.txn_pool[1:]:
+            for txn in block.txns[1:]:
                 for inp_txn in txn.inp_txns:
                     self.UTXOdb.add_by_txnid(inp_txn.txnid, inp_txn.vout)
 
         # adding blocks in front-track of new main chain
         for block in reorg_dict['blocks_to_add']:
-            for txn in block.txn_pool[1:]:
+            for txn in block.txns[1:]:
                 for inp_txn in txn.inp_txns:
                     self.UTXOdb.remove_by_txnid(inp_txn.txnid, inp_txn.vout)
             
-            for txn in block.txn_pool:
+            for txn in block.txns:
                 self.UTXOdb.add_by_txn(txn)
 
     def orphan_txns_redistribute(self):
         o_blocks = self.stabilize.check_for_orphan_nodes()
         if o_blocks:
             for block in o_blocks:
-                for txn in block.txn_pool:
+                for txn in block.txns:
                     for inp_txn in txn.inp_txns:
                         if not self.UTXOdb.search_by_txnid(inp_txn.txnid, inp_txn.vout):
                             break
