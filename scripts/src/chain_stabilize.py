@@ -47,8 +47,8 @@ class Stabilize:
                         r_nodes = self.path_nodes(common, self.longest_active_head)
                         a_nodes = self.path_nodes(common, bnode)
                         p_nodes = {
-                            'nodes_to_remove': r_nodes,
-                            'nodes_to_add': a_nodes
+                            'blocks_to_remove': r_nodes,
+                            'blocks_to_add': a_nodes
                         }
                         """these p_nodes needed to removed from UTXOs and that thing"""
                         print("REORGANIZE")
@@ -71,7 +71,9 @@ class Stabilize:
             end = end.parent
         return p_nodes
 
-    def check_for_orphan_nodes(self, end_block):
+    def check_for_orphan_nodes(self):
+        end_block = self.longest_active_head
+        
         orphan_chains = []
         if (self.longest_height - self.second_longest_head_height) > self.orphan_threshold:
             end = end_block
@@ -83,7 +85,20 @@ class Stabilize:
                     end.parent.children = [end_block]
                 end = end.parent
 
-        return orphan_chains
+        return self.chains_to_blocks(orphan_chains)
+
+    def chains_to_blocks(self, chains):
+        nodes = []
+        for chain in chains:
+            nodes.extend(self.__chains_to_nodes__(chain))
+        return [n.block for n in nodes]
+
+    def __chains_to_nodes__(self, start):
+        l = []
+        l.append(start)
+        for c in start.children:
+            l.extend(self.__chains_to_nodes__(c))
+        return l
 
     def side_branch_nodes(self, main_branch, side_branch):
         side_ids = []
@@ -118,14 +133,15 @@ class B:
         self.prev_block_hash = prev_block_hash
 
 def prrrint(x):
-    if x:
-        print("REMOVE")
-        for i in x['nodes_to_remove']:
-            print(i)
-        print("ADD")
-        x['nodes_to_add'].reverse()
-        for i in x['nodes_to_add']:
-            print(i)
+    pass
+    # if x:
+    #     print("REMOVE")
+    #     for i in x['blocks_to_remove']:
+    #         print(i)
+    #     print("ADD")
+    #     x['blocks_to_add'].reverse()
+    #     for i in x['blocks_to_add']:
+    #         print(i)
 
 if __name__ == '__main__':
     bstab = Stabilize(2)
@@ -163,6 +179,7 @@ if __name__ == '__main__':
     # print(bstab.root.children[0].children)
     # print(bstab.root)
     print("ORPHAN")
-    on = bstab.check_for_orphan_nodes(bstab.longest_active_head)
+    on = bstab.check_for_orphan_nodes()
     for o in on:
         print(o)
+    bstab.chains_to_blocks(on)

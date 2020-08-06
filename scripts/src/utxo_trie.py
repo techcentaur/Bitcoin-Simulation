@@ -57,7 +57,7 @@ class UTXOTrie:
 
         return self.search(txnid, vout, node.children[txnid[index]], index+1)
 
-    def get_by_txnid(self, txnid, node=None, index=0):
+    def get_txn_by_txnid(self, txnid, node=None, index=0):
         if index == 0:
             node = self.root_node
 
