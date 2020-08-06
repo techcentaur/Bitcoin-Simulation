@@ -43,11 +43,12 @@ class Node:
     def calculate_proof(self):
         self.current_block = Block([txn for txn in self.txn_pool], self.blockchain.prev_block_hash)
         self.proof = Proof(self.current_block)
-        proof.run()
+        work = proof.run()
+        if(work == None):
+            return
         self.current_block.nonce = work.nonce
         self.current_block.hash = work.hash
         network.send_block(self.current_block)
-
 
     def recieve_block(self, block):
         """
