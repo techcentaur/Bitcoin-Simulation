@@ -6,6 +6,7 @@ import txn
 from utxo_trie import UTXOTrie 
 from block import Block 
 from txn import TXN 
+from Threading import lock
 
 class Node:
     def __init__(self, network, blockchain=None):
@@ -13,6 +14,7 @@ class Node:
         self.pub_key_hash = utils.hash160(self.keys['public'])
         # self.address = utils.Base58.base58encode(hash160)
         self.txn_pool = []
+        self.lock = Lock()
         self.messages = deque()
         self.get_blockchain()
 
@@ -21,8 +23,6 @@ class Node:
             self.current_block = Block([txn for txn in self.txn_pool], self.blockchain.prev_block_hash)
             self.calculate_proof()
 
-    def start_process(self, lock):
-        self.lock = lock
 
     def create_txn(self, reciever_address, amount):
         out_txns = []
@@ -44,7 +44,7 @@ class Node:
         return True
 
     def create_genesis_block(self):
-        coinbase_txn = TXN.create_coinbase_txn()
+        coinbase_txn = TXN.create_coinbase_txn(self.keys['public'])
         genesis_block = Block.create_genesis_block(coinbase_txn)
         self.current_block = genesis_block
         self.calculate_proof()
@@ -82,20 +82,22 @@ class Node:
         network.distribute_block(self.current_block, self)
 
     def check_messages(self):
-        while len(self.messages):
-            msg_type, msg = self.messages.popleft()
-            if msg_type == "txn":
-                _txn = msg.create_copy()
-                self.receive_txn(_txn)
-            elif msg_type == "block":
-                block = msg.create_copy()
-                self.recieve_block(block)
-            elif msg_type == "new_txn":
-                reciever_address, amount = msg[0], msg[1]
-                self.create_txn(reciever_address, amount)
+        with self.lock:
+            while len(self.messages):
+                msg_type, msg = self.messages.popleft()
+                if msg_type == "txn":
+                    _txn = msg.create_copy()
+                    self.receive_txn(_txn)
+                elif msg_type == "block":
+                    block = msg.create_copy()
+                    self.recieve_block(block)
+                elif msg_type == "new_txn":
+                    reciever_address, amount = msg[0], msg[1]
+                    self.create_txn(reciever_address, amount)
 
     def send_message(self, message):
-        self.messages.append(message)
+        with self.lock:
+            self.messages.append(message)
 
     def recieve_block(self, block):
         """

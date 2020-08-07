@@ -1,6 +1,7 @@
 # we use secp256k1 / 256-bit curve for EC pairs
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 import hashlib
+from script_interpreter import ScriptInterpreter
 
 def generate_ec_key_pairs():
     """generate ecdsa key pairs"""
@@ -81,11 +82,12 @@ def calculate_merkle_root(hashes, arity=2):
 
     return calculate_merkle_root(new_hashes, arity)
 
-def create_script_pub_key():
-    pass
+def create_script_pub_key(pub_key):
+    return hash160(pub_key)
 
-def create_script_sig():
-    pass
+def create_script_sig(keys, pub_key_hash):
+    sig = ScriptInterpreter.get_digital_signature(pub_key_hash.encode(), keys['private'])
+    return keys+pub_key_hash
 
 if __name__ == '__main__':
     # a = generate_ec_key_pairs()

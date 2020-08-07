@@ -38,11 +38,11 @@ class TXN:
     	return TXN(inp_copy, out_copy)
 
     @staticmethod
-    def create_coinbase_txn():
-    	script_sig = create_script_sig()
+    def create_coinbase_txn(keys):
+    	script_sig = create_script_sig(keys, "I am inevitable")
     	inp = InputTXN('0'*64, 4294967295, script_sig)
 
-    	script_pub_key = create_script_pub_key()
+    	script_pub_key = create_script_pub_key(keys['public'])
     	out = OutputTXN(config.reward, script_pub_key)
 
     	txn = TXN([inp], [out])

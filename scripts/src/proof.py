@@ -16,7 +16,6 @@ class Proof:
         for nonce in range(start+1, sys.maxsize): # 2^63-1
             if(quit):
                 return None 
-
             _hash = self.get_hash(nonce)
             if _hash < self.target_hash:
                 return Work(nonce, _hash)
