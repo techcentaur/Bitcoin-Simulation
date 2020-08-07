@@ -1,39 +1,47 @@
 import utils
 from blockchain import Blockchain 
 from colletion import deque
+import output_txn
+import txn
 
 class Node:
     def __init__(self, network, blockchain=None):
         self.keys = utils.generate_ec_key_pairs()
-        hash160 = utils.hash160(self.keys['public'])
-        self.address = utils.Base58.base58encode(hash160)
+        self.pub_key_hash = utils.hash160(self.keys['public'])
+        # self.address = utils.Base58.base58encode(hash160)
         self.txn_pool = []
         self.messages = deque()
         self.get_blockchain()
         while True:
             self.calculate_proof()
 
+    def start_process(self, lock):
+        self.lock = lock
+
+    def create_txn(self, reciever_address, amount):
+        out_txns = []
+        out_txns.append(output_txn.OutputTXN(amount, reciever_address))
+        
+        inp_txns, total_amount = self.blockchain.get_inputs(amount)
+        if (not inp_txns) or (total_amount < amount):
+            # not enough coin
+            return False
+        
+        if not (total_amount == amount):
+            out_txns.append(output_txn.OutputTXN(total_amount - amount, self.pub_key_hash))
+
+        new_txn = txn.TXN(inp_txns, out_txn1)
+        with self.lock:
+            self.messages.append(("txn", new_txn))
+        self.network.distribute_txn(txn, self.node)
+
+        return True
+
     def get_blockchain(self):
         self.blockchain = network.get_blockchain()
         self.database_UTXO = self.create_database_UTXO()
         self.blockchain.node = self
         self.blockchain.UTXOdb = self.database_UTXO
-
-    def create_database_UTXO(self):
-        """ # database is of type TRIE DS
-            - one time scanning of blockchain:
-            to find all unspent txns.
-        """
-
-    def add_block_txns_to_UTXOdb(self, block):
-        # assuming block has been verified
-        for txn in block.txns:
-            for inptxn in txn.inp_txns:
-                if database_UTXO.remove(inptxn):
-        for txn in block.txns:
-            for vout, outtxn in enumerate(txn.out_txns):
-                outtxn.vout = vout
-                database_UTXO.insert(outtxn)
 
     def send_txn_over_network(self, txn):
         network.distribute_txn(txn, self)
@@ -63,11 +71,14 @@ class Node:
         while len(self.messages):
             msg_type, msg = self.messages.popleft()
             if msg_type == "txn":
-                txn = msg.create_copy()
-                receive_txn(txn)
-            else:
+                _txn = msg.create_copy()
+                self.receive_txn(_txn)
+            elif msg_type == "block":
                 block = msg.create_copy()
-                recieve_block(block)
+                self.recieve_block(block)
+            elif msg_type == "new_txn":
+                reciever_address, amount = msg[0], msg[1]
+                self.create_txn(reciever_address, amount)
 
     def send_message(self, message):
         self.messages.append(message)

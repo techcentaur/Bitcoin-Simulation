@@ -20,5 +20,4 @@ class Network:
                 node.send_message(("block", block))
 
 if __name__ == '__main__':
-    net = Network()
-    net.create_nodes(2)
+    pass
