@@ -15,8 +15,8 @@ def main():
     for t in threads:
         t.start()
 
-    for t in threads:
-        t.join()
+    # for t in threads:
+    #     t.join()
 
     # all threads finish their work
 

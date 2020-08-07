@@ -15,6 +15,11 @@ class Node:
         while True:
             self.calculate_proof()
 
+        self.recieved_txn_ids = []
+
+    def coin_recieved_txnid(self, txndata):
+        self.recieved_txn_ids.append(txndata)
+
     def start_process(self, lock):
         self.lock = lock
 
@@ -27,12 +32,19 @@ class Node:
             # not enough coin
             return False
         
-        if not (total_amount == amount):
+        is_last_vout_self = False
+        if total_amount > amount:
+            is_last_vout_self = True
             out_txns.append(output_txn.OutputTXN(total_amount - amount, self.pub_key_hash))
 
-        new_txn = txn.TXN(inp_txns, out_txn1)
+        new_txn = txn.TXN(inp_txns, out_txns)
         with self.lock:
             self.messages.append(("txn", new_txn))
+
+        if is_last_vout_self:
+            self.recieved_txn_ids.append((txn.txnid, len(txn.out_txns)-1))
+
+        self.network.send_txnid_to_node(reciever_address, (txn.txnid, 0))
         self.network.distribute_txn(txn, self.node)
 
         return True

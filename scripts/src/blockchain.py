@@ -176,3 +176,17 @@ class Blockchain:
                     else:
                         # redistribute on network
                         self.network.distribute_txn(txn, self.node)
+
+    def get_inputs(self, amount_needed):
+        amount_found = 0
+        input_txnids = []
+
+        for (txnid, vout) in self.node.recieved_txn_ids:
+            if self.UTXOdb.search_by_txnid(txnid, vout):
+                if amount_found >= amount_needed:
+                    break
+                amount_found += self.UTXOdb.get_txn_by_txnid(txnid).out_txns[vout].amount
+                input_txnids.append(txnid)
+
+        return input_txnids, amount_found
+

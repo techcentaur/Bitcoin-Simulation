@@ -142,10 +142,11 @@ if __name__ == '__main__':
         [Out(), Out(), Out()],
         "233c42"))
     u.add_by_txn(txn)
-    u.add_by_txnid("233c42", 3)
 
-    # u.remove_by_txnid("233c41", 0)
+    # u.add_by_txnid("233c42", 3)
+    # u.remove_by_txnid("233c42", 2)
+    u.print()   
+
     # u.remove_by_txn(txn)
 
     # for i in txn.inp_txns:
-    u.print()
