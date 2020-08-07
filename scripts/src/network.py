@@ -19,5 +19,8 @@ class Network:
             if node != src_node:
                 node.send_message(("block", block))
 
+    def send_txnid_to_node(self, reciever_address, txndata):
+        self.address_node_map[reciever_address].coin_recieved_txnid(txndata)
+
 if __name__ == '__main__':
     pass
