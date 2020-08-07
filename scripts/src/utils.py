@@ -11,6 +11,7 @@ def generate_ec_key_pairs():
             'private': private.to_string().hex(), 
             'public': public.to_string().hex()
             }
+
     return keys
 
 def reverse_bytes(string):
@@ -66,7 +67,7 @@ def double_sha256(text):
     hash2 = hashlib.sha256(str.encode(hash1)).hexdigest()
     return hash2
 
-def calculate_merkle_root(hashes, arity):
+def calculate_merkle_root(hashes, arity=2):
     if len(hashes) == 1:
         return hashes[0]
     remaining = arity - len(hashes) % arity
@@ -80,6 +81,11 @@ def calculate_merkle_root(hashes, arity):
 
     return calculate_merkle_root(new_hashes, arity)
 
+def create_script_pub_key():
+    pass
+
+def create_script_sig():
+    pass
 
 if __name__ == '__main__':
     # a = generate_ec_key_pairs()

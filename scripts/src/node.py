@@ -3,6 +3,9 @@ from blockchain import Blockchain
 from colletion import deque
 import output_txn
 import txn
+from utxo_trie import UTXOTrie 
+from block import Block 
+from txn import TXN 
 
 class Node:
     def __init__(self, network, blockchain=None):
@@ -12,7 +15,10 @@ class Node:
         self.txn_pool = []
         self.messages = deque()
         self.get_blockchain()
-        while True:
+
+    def start_mining(self):
+        while(True):
+            self.current_block = Block([txn for txn in self.txn_pool], self.blockchain.prev_block_hash)
             self.calculate_proof()
 
         self.recieved_txn_ids = []
@@ -49,9 +55,17 @@ class Node:
 
         return True
 
+    def create_genesis_block(self):
+        coinbase_txn = TXN.create_coinbase_txn()
+        genesis_block = Block.create_genesis_block(coinbase_txn)
+        self.current_block = genesis_block
+        self.calculate_proof()
+
+
     def get_blockchain(self):
         self.blockchain = network.get_blockchain()
-        self.database_UTXO = self.create_database_UTXO()
+        self.database_UTXO = UTXOTrie()
+
         self.blockchain.node = self
         self.blockchain.UTXOdb = self.database_UTXO
 
@@ -63,7 +77,6 @@ class Node:
         self.txn_pool.append(txn)
 
     def calculate_proof(self):
-        self.current_block = Block([txn for txn in self.txn_pool], self.blockchain.prev_block_hash)
         self.proof = Proof(self.current_block)
         work = 0
         while True:
@@ -77,6 +90,7 @@ class Node:
             return
         self.current_block.nonce = work.nonce
         self.current_block.hash = work.hash
+        self.blockchain.add_block(self.current_block)
         network.distribute_block(self.current_block, self)
 
     def check_messages(self):
@@ -105,5 +119,3 @@ class Node:
         output = self.blockchain.add_block(block)
         if(output):
             self.proof.quit = True
-
-

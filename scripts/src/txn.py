@@ -1,6 +1,7 @@
 from input_txn import InputTXN 
 from output_txn import OutputTXN 
-from utils import double_sha256
+from utils import double_sha256, create_script_sig, create_script_pub_key
+import config 
 
 class TXN:
     def __init__(self, inp_txns, out_txns):
@@ -35,6 +36,18 @@ class TXN:
     	inp_copy = [inp.create_copy() for inp in self.inp_txns]
     	out_copy = [out.create_copy() for out in self.out_txns]
     	return TXN(inp_copy, out_copy)
+
+    @staticmethod
+    def create_coinbase_txn():
+    	script_sig = create_script_sig()
+    	inp = InputTXN('0'*64, 4294967295, script_sig)
+
+    	script_pub_key = create_script_pub_key()
+    	out = OutputTXN(config.reward, script_pub_key)
+
+    	txn = TXN([inp], [out])
+    	return txn
+
 
 if __name__ == "__main__":
 	inptxn = InputTXN("123abcd4092e",2, "aedfasdfsdfe")
