@@ -18,7 +18,6 @@ def generate_ec_key_pairs():
 
 def reverse_bytes(string):
     """reverse bytes: given big-endian change to little-endian and vice-versa"""
-    print(string)
     ba = bytearray.fromhex(string)
     ba.reverse()
     rev = (''.join(format(x, '02x') for x in ba)).upper()

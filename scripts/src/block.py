@@ -21,8 +21,8 @@ class Block:
 
     def get_serialized_block_header(self, nonce):
         serial = reverse_bytes(self.prev_block_hash) + reverse_bytes(self.merkle_root)
-        serial += reverse_bytes(hex(config.bits)[2:]) 
-        serial += reverse_bytes(hex(nonce)[2:])
+        serial += reverse_bytes('0'*(len(hex(config.bits))%2) + hex(config.bits)[2:]) 
+        serial += reverse_bytes('0'*(len(hex(nonce))%2)+ hex(nonce)[2:])
         return serial
 
     def get_merkle_root_hash(self):
