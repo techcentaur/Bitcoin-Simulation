@@ -18,7 +18,7 @@ def generate_ec_key_pairs():
 
 def reverse_bytes(string):
     """reverse bytes: given big-endian change to little-endian and vice-versa"""
-
+    print(string)
     ba = bytearray.fromhex(string)
     ba.reverse()
     rev = (''.join(format(x, '02x') for x in ba)).upper()
@@ -69,6 +69,8 @@ def double_sha256(text):
     return hash2
 
 def calculate_merkle_root(hashes, arity=2):
+    if(len(hashes) == 0):
+        return None
     if len(hashes) == 1:
         return hashes[0]
     remaining = arity - len(hashes) % arity

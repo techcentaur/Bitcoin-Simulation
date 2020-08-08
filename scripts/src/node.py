@@ -8,7 +8,7 @@ import output_txn
 import network
 from utxo_trie import UTXOTrie 
 from blockchain import Blockchain 
- 
+from proof import Proof
 
 class Node:
     def __init__(self):
@@ -84,7 +84,7 @@ class Node:
         self.proof = Proof(self.current_block)
         work = 0
         while True:
-            work = proof.run(work)
+            work = self.proof.run(work)
             if type(work) == int:
                 self.check_messages()
             else:

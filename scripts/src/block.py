@@ -4,7 +4,7 @@ import config
 
         
 class Block:
-    def __init__(self, prev_block_hash="", txns=[]):
+    def __init__(self, txns=[], prev_block_hash=""):
         self.txns = txns
         self.nonce = 0
         self.hash = ""
@@ -20,7 +20,9 @@ class Block:
         self.merkle_root = self.get_merkle_root_hash()
 
     def get_serialized_block_header(self, nonce):
-        serial = reverse_bytes(self.prev_block_hash) + reverse_bytes(self.merkle_root) + reverse_bytes(config.bits) +reverse_bytes(nonce)
+        serial = reverse_bytes(self.prev_block_hash) + reverse_bytes(self.merkle_root)
+        serial += reverse_bytes(hex(config.bits)[2:]) 
+        serial += reverse_bytes(hex(nonce)[2:])
         return serial
 
     def get_merkle_root_hash(self):
