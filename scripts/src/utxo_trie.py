@@ -127,25 +127,26 @@ class Txn:
 
 if __name__ == '__main__':
     # testing
-    u = UTXOTrie(depth=2)
-    txn = (Txn([In("12acf9", 1), In("12abb9", 2)],
-        [Out(), Out(), Out()],
-        "14fa21"))
-    u.add_by_txn(txn)
+    pass
+    # u = UTXOTrie(depth=2)
+    # txn = (Txn([In("12acf9", 1), In("12abb9", 2)],
+    #     [Out(), Out(), Out()],
+    #     "14fa21"))
+    # u.add_by_txn(txn)
 
-    txn = (Txn([In("937acf", 1), In("124b7b", 0)],
-        [Out(), Out(), Out()],
-        "1212aa"))
-    u.add_by_txn(txn)
+    # txn = (Txn([In("937acf", 1), In("124b7b", 0)],
+    #     [Out(), Out(), Out()],
+    #     "1212aa"))
+    # u.add_by_txn(txn)
 
-    txn = (Txn([In("4212aa", 1), In("4212aa", 0)],
-        [Out(), Out(), Out()],
-        "233c42"))
-    u.add_by_txn(txn)
+    # txn = (Txn([In("4212aa", 1), In("4212aa", 0)],
+    #     [Out(), Out(), Out()],
+    #     "233c42"))
+    # u.add_by_txn(txn)
 
     # u.add_by_txnid("233c42", 3)
     # u.remove_by_txnid("233c42", 2)
-    u.print()   
+    # u.print()   
 
     # u.remove_by_txn(txn)
 

@@ -23,6 +23,9 @@ class Node:
         self.database_UTXO = UTXOTrie()
         self.blockchain = Blockchain(self.database_UTXO, self)
 
+    def __str__(self):
+        return self.blockchain.__str__()
+
     def start_mining(self):
         while(True):
             self.current_block = Block([txn for txn in self.txn_pool], self.blockchain.prev_block_hash)

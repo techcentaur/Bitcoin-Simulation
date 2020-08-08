@@ -13,6 +13,7 @@ def generate_ec_key_pairs():
             'public': public.to_string().hex()
             }
 
+    # print("ppkey-make: ", private.to_string())
     return keys
 
 def reverse_bytes(string):
@@ -26,10 +27,9 @@ def reverse_bytes(string):
 
 def hash160(string):
     """given string -> return hash160 (first sha256 then ripemd160)"""
-    print(string)
-    hexstr = string.decode('hex')
-    hash160 = hashlib.new('ripemd160', hashlib.new('sha256', hexstr).digest()).digest()
-    hash160hex = hash160.encode('hex')
+
+    hash160 = hashlib.new('ripemd160', hashlib.sha256(str.encode(string)).digest())
+    hash160hex = hash160.hexdigest()
     return hash160hex
 
 class Base58:
@@ -103,14 +103,14 @@ if __name__ == '__main__':
     # y = Base58.base58decode(t)
     # print(x)
     # print(y)
-
-    hashes = [
-        'aa',
-        'bb',
-        'cc',
-        'dd',
-        'ee',
-        'ff',
-        '22'
-    ]
-    print(calculate_merkle_root(hashes, 3))
+    pass
+    # hashes = [
+    #     'aa',
+    #     'bb',
+    #     'cc',
+    #     'dd',
+    #     'ee',
+    #     'ff',
+    #     '22'
+    # ]
+    # print(calculate_merkle_root(hashes, 3))

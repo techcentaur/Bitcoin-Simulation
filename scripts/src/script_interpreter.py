@@ -1,6 +1,7 @@
 import utils
 import ecdsa
 from hashlib import sha256
+from ecdsa import SigningKey, SECP256k1
 
 class ScriptInterpreter:
     @staticmethod
@@ -11,8 +12,8 @@ class ScriptInterpreter:
             scriptSig: <digital-signature> <pubKey>
         """
 
-        signature = script_signature[:-64]
-        pub_key = script_signature[-64:]
+        signature = script_signature[:-128]
+        pub_key = script_signature[-128:]
         
         pub_hash160 = utils.hash160(pub_key)
         if not (pub_hash160.strip() == pub_key_script.strip()):
@@ -29,5 +30,9 @@ class ScriptInterpreter:
         """ message should be of class bytes
             private_key is a hex string
         """
-        signature = private_key.sign(message)
-        return signature
+        # print("ppkey: ", bytearray.fromhex(private_key))
+        sk = SigningKey.from_string(bytearray.fromhex(private_key), curve=SECP256k1)
+        
+        signature = sk.sign(str.encode(message))
+        # sprint(signature)
+        return bytearray(signature).hex()

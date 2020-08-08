@@ -16,6 +16,9 @@ class Blockchain:
 
         self.stabilize = Stabilize(orphan_threshold=3)
 
+    def __str__(self):
+        self.UTXOdb.print_main_branch()
+
     def add_block(self, block):
         if not self.verify_block(block):
             return False

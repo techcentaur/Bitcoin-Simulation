@@ -16,5 +16,6 @@ class OutputTXN:
     	return OutputTXN(amount, script_pub_key)
 
 if __name__ == "__main__":
-	output_txn = OutputTXN(314, "abcdef123456")
-	print(output_txn.get_txn_output_data())
+	# output_txn = OutputTXN(314, "abcdef123456")
+	# print(output_txn.get_txn_output_data())
+    pass

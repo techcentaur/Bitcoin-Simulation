@@ -28,5 +28,6 @@ class Proof:
          
 
 if __name__ == '__main__':
-    p = Proof()
-    print(p.target_hash)
+    # p = Proof()
+    # print(p.target_hash)
+    pass

@@ -126,60 +126,58 @@ class Stabilize:
 
         print("[?] pointers can't go beyond the root")
         return self.root
-            
+
+    def print_main_branch(self):
+        last = self.longest_active_head
+        while last.height > -1:
+            print("[*] Block: ", last.block.hash)
+            for txn in last.block.txn_pool:
+                print("\t[.] txn: ", txn.txnid)
+                for i in txn.inp_txns:
+                    print("[txnid: {}. vout: {}. subsig: {}]".format(i.txnid, i.vout, i.signature_script))
+                for o in txn.out_txns:
+                    print("[amount: {}]".format(i.txnid, i.vout))
+            last = last.parent
+
+
 class B:
     def __init__(self, _hash, prev_block_hash):
         self.hash = _hash
         self.prev_block_hash = prev_block_hash
 
 def prrrint(x):
-    pass
-    # if x:
-    #     print("REMOVE")
-    #     for i in x['blocks_to_remove']:
-    #         print(i)
-    #     print("ADD")
-    #     x['blocks_to_add'].reverse()
-    #     for i in x['blocks_to_add']:
-    #         print(i)
+    if x:
+        print("REMOVE")
+        for i in x['blocks_to_remove']:
+            print(i)
+        print("ADD")
+        x['blocks_to_add'].reverse()
+        for i in x['blocks_to_add']:
+            print(i)
 
 if __name__ == '__main__':
-    bstab = Stabilize(2)
-    x = bstab.add(B(1, None))
-    prrrint(x)
-    x = bstab.add(B(2, 1))
-    prrrint(x)
-    x = bstab.add(B(3, 2))
-    prrrint(x)
-    x = bstab.add(B("a", 2))    
-    prrrint(x)
-    x = bstab.add(B("+", 2))    
-    prrrint(x)
-    x = bstab.add(B("b", "a"))    
-    prrrint(x)
-    x = bstab.add(B("-", "b"))    
-    prrrint(x)
-    x = bstab.add(B("c", "b"))    
-    prrrint(x)
-    x = bstab.add(B("d", "c"))    
-    prrrint(x)
-    x = bstab.add(B(4, 3))
-    prrrint(x)
-    x = bstab.add(B(5, 4))
-    prrrint(x)
-    x = bstab.add(B(6, 5))
-    prrrint(x)
-    x = bstab.add(B(7, 6))
-    prrrint(x)
-    x = bstab.add(B(8, 7))
-    prrrint(x)
-    x = bstab.add(B(9, 8))
-    prrrint(x)
+    # bstab = Stabilize(2)
+    # x = bstab.add(B(1, None))
+    # x = bstab.add(B(2, 1))
+    # x = bstab.add(B(3, 2))
+    # x = bstab.add(B("a", 2))    
+    # x = bstab.add(B("+", 2))    
+    # x = bstab.add(B("b", "a"))    
+    # x = bstab.add(B("-", "b"))    
+    # x = bstab.add(B("c", "b"))    
+    # x = bstab.add(B("d", "c"))    
+    # x = bstab.add(B(4, 3))
+    # x = bstab.add(B(5, 4))
+    # x = bstab.add(B(6, 5))
+    # x = bstab.add(B(7, 6))
+    # x = bstab.add(B(8, 7))
+    # x = bstab.add(B(9, 8))
 
-    # print(bstab.root.children[0].children)
-    # print(bstab.root)
-    print("ORPHAN")
-    on = bstab.check_for_orphan_nodes()
-    for o in on:
-        print(o)
-    bstab.chains_to_blocks(on)
+    # # print(bstab.root.children[0].children)
+    # # print(bstab.root)
+    # print("ORPHAN")
+    # on = bstab.check_for_orphan_nodes()
+    # for o in on:
+    #     print(o)
+    # bstab.chains_to_blocks(on)
+    pass

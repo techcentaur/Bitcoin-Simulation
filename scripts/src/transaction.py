@@ -50,10 +50,11 @@ class TXN:
 
 
 if __name__ == "__main__":
-	inptxn = InputTXN("123abcd4092e",2, "aedfasdfsdfe")
-	output_txn = OutputTXN(314, "abcdef123456")
-	print(inptxn.get_txn_input_data())
-	print(output_txn.get_txn_output_data())
-	txn = TXN([inptxn], [output_txn])
-	print(txn.txid)
+	# inptxn = InputTXN("123abcd4092e",2, "aedfasdfsdfe")
+	# output_txn = OutputTXN(314, "abcdef123456")
+	# print(inptxn.get_txn_input_data())
+	# print(output_txn.get_txn_output_data())
+	# txn = TXN([inptxn], [output_txn])
+	# print(txn.txid)
 
+    pass
