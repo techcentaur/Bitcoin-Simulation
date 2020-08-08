@@ -4,7 +4,7 @@ class Network:
 
     def create_nodes(self, num_nodes):
         for i in num_nodes:
-            self.nodes.append(Node())
+            self.nodes.append(Node(self))
 
     def get_blockchain(self):
         pass

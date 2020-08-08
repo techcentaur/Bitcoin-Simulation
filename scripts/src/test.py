@@ -7,10 +7,10 @@ def run_thread(worker, lock):
 def main():
     net = network.Network()
     net.create_nodes(num_nodes=4)
-
+    net.nodes[0].create_genesis_block()
     threads = []
-    for n in range(len(net.nodes)):
-        threads.append(threading.Thread(target=run_thread, args=(net.nodes[n], threading.Lock(),)))
+    for i in range(len(net.nodes)):
+        threads.append(threading.Thread(target=net.nodes[i].start_mining, args=())
 
     for t in threads:
         t.start()

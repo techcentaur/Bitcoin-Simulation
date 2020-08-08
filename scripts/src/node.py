@@ -9,13 +9,14 @@ from txn import TXN
 from Threading import lock
 
 class Node:
-    def __init__(self, network, blockchain=None):
+    def __init__(self, network):
         self.keys = utils.generate_ec_key_pairs()
         self.pub_key_hash = utils.hash160(self.keys['public'])
         # self.address = utils.Base58.base58encode(hash160)
         self.txn_pool = []
         self.lock = Lock()
         self.messages = deque()
+        self.network = network
         self.get_blockchain()
 
     def start_mining(self):
@@ -64,11 +65,9 @@ class Node:
 
 
     def get_blockchain(self):
-        self.blockchain = network.get_blockchain()
         self.database_UTXO = UTXOTrie()
+        self.blockchain = Blockchain(self.database_UTXO, self.network, self)
 
-        self.blockchain.node = self
-        self.blockchain.UTXOdb = self.database_UTXO
 
     def send_txn_over_network(self, txn):
         network.distribute_txn(txn, self)
@@ -78,6 +77,7 @@ class Node:
         self.txn_pool.append(txn)
 
     def calculate_proof(self):
+        check_messages()
         self.proof = Proof(self.current_block)
         work = 0
         while True:
