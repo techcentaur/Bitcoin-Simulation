@@ -14,7 +14,7 @@ class Proof:
 
     def run(self, start):
         for nonce in range(start+1, sys.maxsize): # 2^63-1
-            if(quit):
+            if(self.quit):
                 return None 
             _hash = self.get_hash(nonce)
             if _hash < self.target_hash:
@@ -24,9 +24,8 @@ class Proof:
                 return nonce
 
     def get_hash(self, nonce):
-        # hash function TBI
-        double_hash = double_sha256(block.get_serialized_block_header(nonce))
-        return double_hash
+        return double_sha256(self.block.get_serialized_block_header(nonce))
+         
 
 if __name__ == '__main__':
     p = Proof()

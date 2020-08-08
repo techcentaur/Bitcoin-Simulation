@@ -85,9 +85,12 @@ def calculate_merkle_root(hashes, arity=2):
 def create_script_pub_key(pub_key):
     return hash160(pub_key)
 
-def create_script_sig(keys, pub_key_hash):
-    sig = ScriptInterpreter.get_digital_signature(pub_key_hash.encode(), keys['private'])
-    return keys+pub_key_hash
+def create_script_sig(keys, serialized_txn):
+    """serialized_txn is usually the messaage to make the 
+    use of digital signature one time thing
+    """
+    digital_sig = ScriptInterpreter.get_digital_signature(serialized_txn, keys['private'])
+    return digital_sig + keys['public']
 
 if __name__ == '__main__':
     # a = generate_ec_key_pairs()

@@ -8,7 +8,7 @@ class ScriptInterpreter:
         """
         Bitcoin version:
             scriptPubKey: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
-            scriptSig: <sig> <pubKey>
+            scriptSig: <digital-signature> <pubKey>
         """
 
         signature = script_signature[:-64]

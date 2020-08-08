@@ -1,28 +1,39 @@
-from node import Node
+import node
 
 class Network:
+    nodes  = [] # star topology
+    
     def __init__(self):
-        self.nodes  = [] # star topology
-
-    def create_nodes(self, num_nodes):
-        for i in range(num_nodes):
-            self.nodes.append(Node(self))
-
-    def get_blockchain(self):
         pass
 
-    def distribute_txn(self, txn, src_node):
-        for node in self.nodes:
-            if node != src_node:
-                node.send_message(("txn", temp_txn))
+    @staticmethod
+    def add_node(n):
+        Network.nodes.append(n)
 
-    def distribute_block(self, block, src_node):
-        for node in self.nodes:
-            if node != src_node:
-                node.send_message(("block", block))
+    @staticmethod
+    def create_nodes(num_nodes):
+        for i in range(num_nodes):
+            Network.nodes.append(node.Node())
 
-    def send_txnid_to_node(self, reciever_address, txndata):
-        self.address_node_map[reciever_address].coin_recieved_txnid(txndata)
+    @staticmethod
+    def get_blockchain():
+        pass
+
+    @staticmethod
+    def distribute_txn(txn, src_node):
+        for n in Network.nodes:
+            if n != src_node:
+                n.send_message(("txn", temp_txn))
+
+    @staticmethod
+    def distribute_block(block, src_node):
+        for n in Network.nodes:
+            if n != src_node:
+                n.send_message(("block", block))
+
+    @staticmethod
+    def send_txnid_to_node(reciever_address, txndata):
+        address_node_map[reciever_address].coin_recieved_txnid(txndata)
 
 if __name__ == '__main__':
     pass

@@ -1,12 +1,14 @@
 import hashlib
 
+import network
 from script_interpreter import ScriptInterpreter
 from chain_stabilize import Stabilize
+from utils import double_sha256
+import config
 
 class Blockchain:
-    def __init__(self, UTXOdb, network, node):
+    def __init__(self, UTXOdb, node):
         self.UTXOdb = UTXOdb
-        self.network = network
         self.node = node
 
         self.prev_block_hash = None
@@ -55,16 +57,11 @@ class Blockchain:
         """
 
         serial = block.get_serialized_block_header(block.nonce)
-        
-        hash_hex = hashlib.new('sha256',
-            hashlib.new('sha256', serial.decode('hex')).digest()).digest().encode('hex')
-
+    
         # verifying hash of block
-        if not (hash_hex == block.hash):
-            return False
-
-        # TODO: verify merkle hash here
-        if not (block.merkle_root_hash == block.get_merkle_root_hash()):
+        hash_hex = double_sha256(serial)
+        if not (hash_hex == block.hash and 
+            block.merkle_root == block.get_merkle_root_hash()):
             return False
 
         # block.txns[0] is coinbase [ASSUMPTION]
@@ -99,8 +96,9 @@ class Blockchain:
                         and (int(coinbase.inputs[0].vout, 16) == -1)
                         and (len(coinbase.out_txns) == 1)):
             return False
-        if coinbase.out_txns[0].amount > coinbase_future_reward:
+        if coinbase.out_txns[0].amount > coinbase_future_reward + config.reward:
             return False
+
         return True
 
     def update_txn_pool(self, block):
@@ -109,12 +107,12 @@ class Blockchain:
             txn_hashmap[txn.txnid] = True
 
         remove_pool = []
-        for txn in self.node.txn_pool:
+        for txn in self.node.waiting_txn_pool:
             if txn in txn_hashmap:
                 remove_pool.append(txn)
 
         for txn in remove_pool:
-            self.node.txn_pool.remove(txn)
+            self.node.waiting_txn_pool.remove(txn)
 
     def insert_block_in_chain(self, block):
         """

@@ -1,23 +1,27 @@
-import utils
-from blockchain import Blockchain 
 from collections import deque
-import output_txn
-import txn
-from utxo_trie import UTXOTrie 
-from block import Block 
-from txn import TXN 
 from threading import Lock
 
+import utils
+import block 
+import transaction
+import output_txn
+import network
+from utxo_trie import UTXOTrie 
+from blockchain import Blockchain 
+ 
+
 class Node:
-    def __init__(self, network):
+    def __init__(self):
         self.keys = utils.generate_ec_key_pairs()
         self.pub_key_hash = utils.hash160(self.keys['public'])
+        
         # self.address = utils.Base58.base58encode(hash160)
-        self.txn_pool = []
+        self.waiting_txn_pool = []
         self.lock = Lock()
         self.messages = deque()
-        self.network = network
-        self.get_blockchain()
+        
+        self.database_UTXO = UTXOTrie()
+        self.blockchain = Blockchain(self.database_UTXO, self)
 
     def start_mining(self):
         while(True):
@@ -58,15 +62,11 @@ class Node:
         return True
 
     def create_genesis_block(self):
-        coinbase_txn = TXN.create_coinbase_txn(self.keys['public'])
-        genesis_block = Block.create_genesis_block(coinbase_txn)
+        coinbase_txn = transaction.TXN.create_coinbase_txn(self.keys)
+        genesis_block = block.Block.create_genesis_block(coinbase_txn)
+
         self.current_block = genesis_block
         self.calculate_proof()
-
-
-    def get_blockchain(self):
-        self.database_UTXO = UTXOTrie()
-        self.blockchain = Blockchain(self.database_UTXO, self.network, self)
 
 
     def send_txn_over_network(self, txn):
@@ -77,22 +77,24 @@ class Node:
         self.txn_pool.append(txn)
 
     def calculate_proof(self):
-        check_messages()
+        self.check_messages()
         self.proof = Proof(self.current_block)
         work = 0
         while True:
             work = proof.run(work)
             if type(work) == int:
-                check_messages()
+                self.check_messages()
             else:
                 break
 
         if(work == None):
             return
+
         self.current_block.nonce = work.nonce
         self.current_block.hash = work.hash
+
         self.blockchain.add_block(self.current_block)
-        network.distribute_block(self.current_block, self)
+        network.Network.distribute_block(self.current_block, self)
 
     def check_messages(self):
         with self.lock:

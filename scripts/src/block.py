@@ -17,15 +17,16 @@ class Block:
         self.prev_block_hash = prev_block_hash
         self.txns = txns
         self.nonce = nonce
-        self.merkle_root = get_merkle_root_hash()
+        self.merkle_root = self.get_merkle_root_hash()
 
     def get_serialized_block_header(self, nonce):
-        serial = reverse_bytes(self.prev_block_hash) + reverse_bytes(self.merkle_root) +              reverse_bytes(proof.Proof.target_threshold) +reverse_bytes(nonce)
+        serial = reverse_bytes(self.prev_block_hash) + reverse_bytes(self.merkle_root)
+                + reverse_bytes(config.bits) +reverse_bytes(nonce)
         return serial
 
     def get_merkle_root_hash(self):
         txn_hash = [txn.txid for txn in self.txns]
-        return calculate_merkle_root(txn_hash, arity)
+        return calculate_merkle_root(txn_hash, config.arity)
 
     def create_copy(self):
         txn_copy = [txn.create_copy() for txn in self.txns]
@@ -35,12 +36,9 @@ class Block:
         new_block.bits = self.bits
         new_block.merkle_root = self.merkle_root
 
-
     @staticmethod
     def create_genesis_block(coinbase_txn):
         block = Block()
         block.update("0"*64, [coinbase_txn], 0)
-
-        # mine proof of work of block
         return block
 
