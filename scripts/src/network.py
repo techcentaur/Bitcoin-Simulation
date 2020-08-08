@@ -1,9 +1,11 @@
+from node import Node
+
 class Network:
     def __init__(self):
         self.nodes  = [] # star topology
 
     def create_nodes(self, num_nodes):
-        for i in num_nodes:
+        for i in range(num_nodes):
             self.nodes.append(Node(self))
 
     def get_blockchain(self):

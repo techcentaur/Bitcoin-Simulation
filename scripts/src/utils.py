@@ -26,7 +26,7 @@ def reverse_bytes(string):
 
 def hash160(string):
     """given string -> return hash160 (first sha256 then ripemd160)"""
-
+    print(string)
     hexstr = string.decode('hex')
     hash160 = hashlib.new('ripemd160', hashlib.new('sha256', hexstr).digest()).digest()
     hash160hex = hash160.encode('hex')

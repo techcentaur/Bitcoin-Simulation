@@ -1,12 +1,12 @@
 import utils
 from blockchain import Blockchain 
-from colletion import deque
+from collections import deque
 import output_txn
 import txn
 from utxo_trie import UTXOTrie 
 from block import Block 
 from txn import TXN 
-from Threading import lock
+from threading import Lock
 
 class Node:
     def __init__(self, network):

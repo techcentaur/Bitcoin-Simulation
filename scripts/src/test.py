@@ -10,7 +10,7 @@ def main():
     net.nodes[0].create_genesis_block()
     threads = []
     for i in range(len(net.nodes)):
-        threads.append(threading.Thread(target=net.nodes[i].start_mining, args=())
+        threads.append(threading.Thread(target=net.nodes[i].start_mining, args=()))
 
     for t in threads:
         t.start()

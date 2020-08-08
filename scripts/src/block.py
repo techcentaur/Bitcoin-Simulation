@@ -20,10 +20,7 @@ class Block:
         self.merkle_root = get_merkle_root_hash()
 
     def get_serialized_block_header(self, nonce):
-        serial = reverse_bytes(self.prev_block_hash) + 
-                 reverse_bytes(self.merkle_root) + 
-                 reverse_bytes(proof.Proof.target_threshold)
-                 reverse_bytes(nonce)
+        serial = reverse_bytes(self.prev_block_hash) + reverse_bytes(self.merkle_root) +              reverse_bytes(proof.Proof.target_threshold) +reverse_bytes(nonce)
         return serial
 
     def get_merkle_root_hash(self):
@@ -38,7 +35,7 @@ class Block:
         new_block.bits = self.bits
         new_block.merkle_root = self.merkle_root
 
-        
+
     @staticmethod
     def create_genesis_block(coinbase_txn):
         block = Block()

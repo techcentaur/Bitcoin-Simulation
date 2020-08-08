@@ -22,7 +22,7 @@ class ScriptInterpreter:
                             curve=ecdsa.SECP256k1,
                             hashfunc=sha256)
         # message should be of class bytes
-        return (vk.verify(bytes.fromhex(signature), message)):
+        return (vk.verify(bytes.fromhex(signature), message))
 
     @staticmethod
     def get_digital_signature(message, private_key):
