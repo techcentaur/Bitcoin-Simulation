@@ -11,18 +11,22 @@ class Blockchain:
         self.UTXOdb = UTXOdb
         self.node = node
 
-        self.prev_block_hash = None
+        self.prev_block_hash = "0"*64
         self.last_block_pointer = None
 
         self.stabilize = Stabilize(orphan_threshold=3)
 
     def __str__(self):
-        self.UTXOdb.print_main_branch()
+        return self.stabilize.print_it_all(self.stabilize.root)
 
-    def add_block(self, block):
-        if not self.verify_block(block):
-            return False
-        self.insert_block_in_chain(block)
+    def add_block(self, block, genesis=False):
+        if genesis:
+            self.insert_block_in_chain(block)
+        else:
+            if not self.verify_block(block): 
+                return False
+            self.insert_block_in_chain(block)
+        return True
 
     def verify_txn(self, txn):
         input_amount = 0
@@ -95,8 +99,8 @@ class Blockchain:
 
         # verify coinbase
         coinbase = block.txns[0]
-        if not ((len(coinbase.inputs()) == 1) and (int(coinbase.inputs[0].txnid, 16) == 0)
-                        and (int(coinbase.inputs[0].vout, 16) == -1)
+        if not ((len(coinbase.inp_txns) == 1) and (int(coinbase.inp_txns[0].txnid, 16) == 0)
+                        and (int(coinbase.inp_txns[0].vout, 16) == -1)
                         and (len(coinbase.out_txns) == 1)):
             return False
         if coinbase.out_txns[0].amount > coinbase_future_reward + config.reward:
@@ -104,9 +108,9 @@ class Blockchain:
 
         return True
 
-    def update_txn_pool(self, block):
+    def update_txn_pool(self, txns):
         txn_hashmap = {}
-        for txn in block.txns:
+        for txn in txns:
             txn_hashmap[txn.txnid] = True
 
         remove_pool = []
@@ -136,7 +140,7 @@ class Blockchain:
             for txn in block.txns:
                 self.UTXOdb.add_by_txn(txn)
 
-            self.update_txn_pool(block)
+            self.update_txn_pool(block.txns[1:])
         else:
             # new block is in side chain
             reorg_dict = self.stabilize.add(block)

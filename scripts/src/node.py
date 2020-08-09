@@ -9,6 +9,7 @@ import network
 from utxo_trie import UTXOTrie 
 from blockchain import Blockchain 
 from proof import Proof
+import time
 
 class Node:
     def __init__(self):
@@ -23,14 +24,18 @@ class Node:
         self.database_UTXO = UTXOTrie()
         self.blockchain = Blockchain(self.database_UTXO, self)
 
+        self.recieved_txn_ids = []
+
     def __str__(self):
         return self.blockchain.__str__()
 
     def start_mining(self):
         while(True):
-            self.current_block = Block([txn for txn in self.txn_pool], self.blockchain.prev_block_hash)
+            new_txn_pool = self.waiting_txn_pool.copy()
+            self.waiting_txn_pool = []
+
+            self.current_block = block.Block([txn for txn in new_txn_pool], self.blockchain.prev_block_hash)
             self.calculate_proof()
-        self.recieved_txn_ids = []
 
     def coin_recieved_txnid(self, txndata):
         self.recieved_txn_ids.append(txndata)
@@ -64,20 +69,26 @@ class Node:
 
         return True
 
-    def create_genesis_block(self):
-        coinbase_txn = transaction.TXN.create_coinbase_txn(self.keys)
+    @staticmethod
+    def create_genesis_block(keys):
+        coinbase_txn = transaction.TXN.create_coinbase_txn(keys)
         genesis_block = block.Block.create_genesis_block(coinbase_txn)
 
-        self.current_block = genesis_block
-        self.calculate_proof()
+        genesis_block.prev_block_hash = "0"*64
+        genesis_block.hash = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
 
+        return genesis_block
+
+    def save_genesis_block(self, genesis_block):
+        # we will always get it once at the start
+        return self.blockchain.add_block(genesis_block, genesis=True)
 
     def send_txn_over_network(self, txn):
         network.distribute_txn(txn, self)
 
     def receive_txn(txn):
         self.blockchain.verify_txn(txn)
-        self.txn_pool.append(txn)
+        self.waiting_txn_pool.append(txn)
 
     def calculate_proof(self):
         self.check_messages()

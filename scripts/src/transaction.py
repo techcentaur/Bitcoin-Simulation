@@ -7,11 +7,11 @@ class TXN:
     def __init__(self, inp_txns, out_txns):
         self.inp_txns = inp_txns
         self.out_txns = out_txns
-        self.create_txid()
+        self.txnid = self.create_txid()
 
     def create_txid(self):
         data = self.get_txn_data()
-        self.txid = double_sha256(data)
+        return double_sha256(data)
 
     def get_txn_data(self):
         inp_count = hex(len(self.inp_txns))[2:]

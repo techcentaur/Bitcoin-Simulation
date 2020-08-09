@@ -1,16 +1,18 @@
+from block import Block
+
 class Bnode:
     def __init__(self, children=[], parent=None, height=0, block=None):
         self.children = children
         self.parent = parent
         self.height = height
         if block is None:
-            self.block = B(None, None)
+            self.block = Block()
         else:
             self.block = block
 
     def __str__(self):
         s = ""
-        s += " p: {}".format(None if self.parent is None else self.parent.block.hash)
+        s += " p: {}".format("0"*64 if self.parent is None else self.parent.block.hash)
         s += " h: {}".format(self.height)
         s += " id: {}".format(self.block.hash)
         s += " child: -> \n{a}[{b}]".format(a="\t"*(self.height+1), b="\n\t".join([x.__str__() for x in self.children]))
@@ -26,7 +28,7 @@ class Stabilize:
         self.longest_active_head = None
 
     def add(self, b):
-        if b.prev_block_hash == None:
+        if b.prev_block_hash == "0"*64:
             self.root.block = b
         else:
             return self.__add(self.root, b)
@@ -129,6 +131,10 @@ class Stabilize:
 
     def print_main_branch(self):
         last = self.longest_active_head
+        
+        if not last:
+            return ""
+            
         while last.height > -1:
             print("[*] Block: ", last.block.hash)
             for txn in last.block.txn_pool:
@@ -139,6 +145,11 @@ class Stabilize:
                     print("[amount: {}]".format(i.txnid, i.vout))
             last = last.parent
 
+    def print_it_all(self, start):
+        print(start)
+        for c in start.children:
+            self.print_it_all(c)
+        return ""
 
 class B:
     def __init__(self, _hash, prev_block_hash):

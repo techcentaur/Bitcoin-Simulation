@@ -13,7 +13,7 @@ class OutputTXN:
     	return reverse_amount + pubkey_size + self.script_pub_key
 
     def create_copy(self):
-    	return OutputTXN(amount, script_pub_key)
+    	return OutputTXN(self.amount, self.script_pub_key)
 
 if __name__ == "__main__":
 	# output_txn = OutputTXN(314, "abcdef123456")
