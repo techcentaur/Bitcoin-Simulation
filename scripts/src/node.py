@@ -29,6 +29,12 @@ class Node:
     def __str__(self):
         return self.blockchain.__str__()
 
+    def print(self, pad=""):
+        print(pad, "##########---------- Node ----------##########")
+        print(pad, "[@] Private Key : {}".format(self.keys['private']))
+        print(pad, "[@] Public Key : {}".format(self.keys['public']))
+        self.blockchain.print("    ")
+
     def start_mining(self):
         while True:
             if not self.waiting_txn_pool:

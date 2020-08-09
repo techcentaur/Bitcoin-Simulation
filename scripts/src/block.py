@@ -20,6 +20,18 @@ class Block:
         s += "nonce: {}\n".format(self.nonce)
         return s
 
+    def print(self, pad=""):
+        print(pad, "##########---------- Block ----------##########")
+        print(pad, "[@] Nonce : {}".format(self.nonce))
+        print(pad, "[@] Hash : {}".format(self.hash))
+        print(pad, "[@] Prev Block Hash : {}".format(self.prev_block_hash))
+        print(pad, "[@] Bits : {}".format(self.bits))
+        print(pad, "[@] Merkle Root : {}".format(self.merkle_root))
+        for txn in self.txns:
+            txn.print(pad + "    ")
+        print()
+
+
     def update(self, prev_block_hash, txns, nonce):
         self.hash = "" 
         self.prev_block_hash = prev_block_hash

@@ -21,11 +21,12 @@ class InputTXN:
     def create_copy(self):
         return InputTXN(self.txnid, self.vout, self.signature_script)
     
-    def print(self, pad):
+    def print(self, pad=""):
         print(pad, "#####----- Input_txn -----#####")
         print(pad, "[@] TXNID : {}".format(self.txnid))
         print(pad, "[@] Vout : {}".format(self.vout))
         print(pad, "[@] Sig Script : {}".format(self.signature_script))
+        print()
 
 if __name__ == "__main__":
     # inptxn = InputTXN("123abcd4092e",2, "aedfasdfsdfe")

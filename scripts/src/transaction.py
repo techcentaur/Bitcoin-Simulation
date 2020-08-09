@@ -37,16 +37,16 @@ class TXN:
 		out_copy = [out.create_copy() for out in self.out_txns]
 		return TXN(inp_copy, out_copy)
 
-	def print(self, pad):
+	def print(self, pad=""):
 		print(pad, "##########---------- TXN ----------##########")
-		for inp in self.inp_txns:
-			inp.print("    ")
-		for out in self.out_txns:
-			out.print("    ")
-
 		print(pad, "[@] TXNID : {}".format(self.txnid))
+		for inp in self.inp_txns:
+			inp.print(pad + "    ")
+		for out in self.out_txns:
+			out.print(pad + "    ")
+		print()
 
-		
+
 	@staticmethod
 	def create_coinbase_txn(keys):
 		script_sig = create_script_sig(keys, "I am inevitable")
