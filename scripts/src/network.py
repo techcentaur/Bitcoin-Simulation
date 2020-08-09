@@ -2,7 +2,8 @@ import node
 
 class Network:
     nodes  = [] # star topology
-    
+    address_map = {} # pub_key_hash -> index in nodes
+
     def __init__(self):
         pass
 
@@ -33,7 +34,7 @@ class Network:
 
     @staticmethod
     def send_txnid_to_node(reciever_address, txndata):
-        address_node_map[reciever_address].coin_recieved_txnid(txndata)
+        pass
 
 if __name__ == '__main__':
     pass

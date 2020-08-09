@@ -55,7 +55,7 @@ class UTXOTrie:
         if txnid[index] not in node.children:
             return False
 
-        return self.search(txnid, vout, node.children[txnid[index]], index+1)
+        return self.search_by_txnid(txnid, vout, node.children[txnid[index]], index+1)
 
     def get_txn_by_txnid(self, txnid, node=None, index=0):
         if index == 0:
@@ -69,7 +69,7 @@ class UTXOTrie:
         if txnid[index] not in node.children:
             return False
 
-        return self.get_by_txnid(txnid, node.children[txnid[index]], index+1)
+        return self.get_txn_by_txnid(txnid, node.children[txnid[index]], index+1)
 
     def remove_by_txnid(self, txnid, vout, node=None, index=0):
         if index == 0:

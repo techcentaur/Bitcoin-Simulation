@@ -191,7 +191,7 @@ class Blockchain:
                 if amount_found >= amount_needed:
                     break
                 amount_found += self.UTXOdb.get_txn_by_txnid(txnid).out_txns[vout].amount
-                input_txnids.append(txnid)
+                input_txnids.append((txnid, vout))
 
         return input_txnids, amount_found
 

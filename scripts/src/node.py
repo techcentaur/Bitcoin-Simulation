@@ -1,10 +1,10 @@
 from collections import deque
-from threading import Lock
-
+from threading import Lock, current_thread
 import utils
 import block 
 import transaction
 import output_txn
+import input_txn
 import network
 from utxo_trie import UTXOTrie 
 from blockchain import Blockchain 
@@ -30,7 +30,13 @@ class Node:
         return self.blockchain.__str__()
 
     def start_mining(self):
-        while(True):
+        while True:
+            if not self.waiting_txn_pool:
+                print("thread: {} [sleeping]".format(current_thread()))
+                time.sleep(5)
+                self.check_messages()
+                continue
+
             new_txn_pool = self.waiting_txn_pool.copy()
             self.waiting_txn_pool = []
 
@@ -40,15 +46,12 @@ class Node:
     def coin_recieved_txnid(self, txndata):
         self.recieved_txn_ids.append(txndata)
 
-    def start_process(self, lock):
-        self.lock = lock
-
     def create_txn(self, reciever_address, amount):
         out_txns = []
         out_txns.append(output_txn.OutputTXN(amount, reciever_address))
         
-        inp_txns, total_amount = self.blockchain.get_inputs(amount)
-        if (not inp_txns) or (total_amount < amount):
+        inp_txnids, total_amount = self.blockchain.get_inputs(amount)
+        if (not inp_txnids) or (total_amount < amount):
             # not enough coin
             return False
         
@@ -57,16 +60,31 @@ class Node:
             is_last_vout_self = True
             out_txns.append(output_txn.OutputTXN(total_amount - amount, self.pub_key_hash))
 
-        new_txn = txn.TXN(inp_txns, out_txns)
+        inp_txns = []
+        for i in inp_txnids:
+            signature = utils.create_script_sig(self.keys, i[0])
+            inp_txns.append(input_txn.InputTXN(i[0], i[1], signature))
+
+        print("x1")
+        new_txn = transaction.TXN(inp_txns, out_txns)
+        
+        print("x2")
         with self.lock:
             self.messages.append(("txn", new_txn))
 
+        print("x3")
         if is_last_vout_self:
             self.recieved_txn_ids.append((txn.txnid, len(txn.out_txns)-1))
 
-        self.network.send_txnid_to_node(reciever_address, (txn.txnid, 0))
-        self.network.distribute_txn(txn, self.node)
+        print("x4")
+        with self.lock:
+            Network.nodes[Network.address_map[reciever_address]].coin_recieved_txnid((txn.txnid, 0))
 
+        print("x5")
+        with self.lock:
+            for n in Network.nodes:
+                if n != self:
+                    n.messages.append(("txn", txn))
         return True
 
     @staticmethod
@@ -87,7 +105,9 @@ class Node:
         network.distribute_txn(txn, self)
 
     def receive_txn(txn):
-        self.blockchain.verify_txn(txn)
+        ret = self.blockchain.verify_txn(txn)
+        if not ret:
+            print("T: {} TXN false".format(current_thread()))
         self.waiting_txn_pool.append(txn)
 
     def calculate_proof(self):
@@ -114,6 +134,7 @@ class Node:
         with self.lock:
             while len(self.messages):
                 msg_type, msg = self.messages.popleft()
+                print("T: ", current_thread(), " type: {}".format(msg_type))
                 if msg_type == "txn":
                     _txn = msg.create_copy()
                     self.receive_txn(_txn)
@@ -122,7 +143,8 @@ class Node:
                     self.recieve_block(block)
                 elif msg_type == "new_txn":
                     reciever_address, amount = msg[0], msg[1]
-                    self.create_txn(reciever_address, amount)
+                    ret = self.create_txn(reciever_address, amount)
+                    print(ret)
 
     def send_message(self, message):
         with self.lock:
