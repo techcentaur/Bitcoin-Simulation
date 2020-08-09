@@ -15,6 +15,11 @@ class OutputTXN:
     def create_copy(self):
     	return OutputTXN(self.amount, self.script_pub_key)
 
+    def print(self, pad):
+        print(pad, "#####----- Output TXN -----#####")
+        print(pad, "[@] Amount : {}".format(self.amount))
+        print(pad, "[@] Script Pub Key : {}".format(self.script_pub_key))
+
 if __name__ == "__main__":
 	# output_txn = OutputTXN(314, "abcdef123456")
 	# print(output_txn.get_txn_output_data())
