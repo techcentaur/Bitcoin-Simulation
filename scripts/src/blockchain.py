@@ -19,6 +19,9 @@ class Blockchain:
     def __str__(self):
         return self.stabilize.print_it_all(self.stabilize.root)
 
+    def print(self, pad=""):
+        print(pad, self.stabilize.print_it_all(self.stabilize.root))
+
     def add_block(self, block, genesis=False):
         if genesis:
             self.insert_block_in_chain(block)

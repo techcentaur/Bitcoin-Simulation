@@ -25,18 +25,18 @@ def main():
             print("[*] Can't add gen block") 
 
     for n in Network.nodes:
-        print(n)
+        n.print()
 
-    threads = []
-    for i in range(len(Network.nodes)):
-        threads.append(threading.Thread(target=run_thread, args=(Network.nodes[i], )))
+    # threads = []
+    # for i in range(len(Network.nodes)):
+    #     threads.append(threading.Thread(target=run_thread, args=(Network.nodes[i], )))
 
-    for t in threads:
-        t.start()
+    # for t in threads:
+    #     t.start()
 
-    # # here will add some testing txns by the main threads
+    # # # here will add some testing txns by the main threads
     # lock = threading.Lock()
-    # # print("[Address map]", Network.address_map)
+    # print("[Address map]", Network.address_map)
 
     # with lock:
     #     Network.nodes[0].messages.append(("new_txn", (Network.address_map[1], 2)))

@@ -33,7 +33,10 @@ class Node:
         print(pad, "##########---------- Node ----------##########")
         print(pad, "[@] Private Key : {}".format(self.keys['private']))
         print(pad, "[@] Public Key : {}".format(self.keys['public']))
-        self.blockchain.print("    ")
+        print(pad, "[@] Pub Key Hash : {}".format(self.pub_key_hash))
+
+        print(pad, "[@] Blockchain")
+        self.blockchain.print(pad + "    ")
 
     def start_mining(self):
         while True:
