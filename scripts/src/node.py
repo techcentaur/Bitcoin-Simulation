@@ -113,7 +113,7 @@ class Node:
     def send_txn_over_network(self, txn):
         network.distribute_txn(txn, self)
 
-    def receive_txn(txn):
+    def receive_txn(self, txn):
         ret = self.blockchain.verify_txn(txn)
         if not ret:
             print("T: {} TXN false".format(current_thread()))
@@ -140,20 +140,23 @@ class Node:
         network.Network.distribute_block(self.current_block, self)
 
     def check_messages(self):
-        with self.lock:
-            while len(self.messages):
+        while len(self.messages):
+            with self.lock:
                 msg_type, msg = self.messages.popleft()
-                print("T: ", current_thread(), " type: {}".format(msg_type))
-                if msg_type == "txn":
-                    _txn = msg.create_copy()
-                    self.receive_txn(_txn)
-                elif msg_type == "block":
-                    block = msg.create_copy()
-                    self.recieve_block(block)
-                elif msg_type == "new_txn":
-                    reciever_address, amount = msg[0], msg[1]
-                    ret = self.create_txn(reciever_address, amount)
-                    print(ret)
+            
+            print("T: ", current_thread(), " type: {}".format(msg_type))
+            if msg_type == "txn":
+                _txn = msg.create_copy()
+                self.receive_txn(_txn)
+            elif msg_type == "block":
+                block = msg.create_copy()
+                self.recieve_block(block)
+            elif msg_type == "new_txn":
+                reciever_address, amount = msg[0], msg[1]
+                print("Inside")
+                ret = self.create_txn(reciever_address, amount)
+                print("Outside")
+                print(ret)
 
     def send_message(self, message):
         with self.lock:
