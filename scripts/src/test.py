@@ -27,19 +27,20 @@ def main():
     for n in Network.nodes:
         n.print()
 
-    # threads = []
-    # for i in range(len(Network.nodes)):
-    #     threads.append(threading.Thread(target=run_thread, args=(Network.nodes[i], )))
+    threads = []
+    for i in range(len(Network.nodes)):
+        threads.append(threading.Thread(target=run_thread, args=(Network.nodes[i], )))
 
-    # for t in threads:
-    #     t.start()
+    for t in threads:
+        t.start()
 
     # # # here will add some testing txns by the main threads
     # lock = threading.Lock()
-    # print("[Address map]", Network.address_map)
+    print("[Address map]", Network.address_map)
 
     # with lock:
     #     Network.nodes[0].messages.append(("new_txn", (Network.address_map[1], 2)))
+    Network.nodes[0].create_txn(Network.address_map[1], 10)
 
     # # time.sleep(20)
     # # for n in Network.nodes:

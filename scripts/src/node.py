@@ -83,17 +83,17 @@ class Node:
 
         print("x3")
         if is_last_vout_self:
-            self.recieved_txn_ids.append((txn.txnid, len(txn.out_txns)-1))
+            self.recieved_txn_ids.append((new_txn.txnid, len(new_txn.out_txns)-1))
 
         print("x4")
         with self.lock:
-            Network.nodes[Network.address_map[reciever_address]].coin_recieved_txnid((txn.txnid, 0))
+            network.Network.nodes[network.Network.address_map[reciever_address]].coin_recieved_txnid((new_txn.txnid, 0))
 
         print("x5")
         with self.lock:
-            for n in Network.nodes:
+            for n in network.Network.nodes:
                 if n != self:
-                    n.messages.append(("txn", txn))
+                    n.messages.append(("txn", new_txn))
         return True
 
     @staticmethod
