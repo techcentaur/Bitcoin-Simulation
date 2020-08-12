@@ -72,7 +72,8 @@ def calculate_merkle_root(hashes, arity=2):
         return None
     if len(hashes) == 1:
         return double_sha256(hashes[0] + hashes[0])
-    remaining = arity - len(hashes) % arity
+    # remaining = arity - (len(hashes) % arity)
+    remaining = (len(hashes) % arity)
     for i in range(remaining):
         hashes.append(hashes[-1])
 

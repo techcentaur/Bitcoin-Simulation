@@ -5,6 +5,7 @@ from script_interpreter import ScriptInterpreter
 from chain_stabilize import Stabilize
 from utils import double_sha256
 import config
+import threading
 
 class Blockchain:
     def __init__(self, UTXOdb, node):
@@ -20,14 +21,24 @@ class Blockchain:
         return self.stabilize.print_it_all(self.stabilize.root)
 
     def print(self, pad=""):
-        print(pad, self.stabilize.print_it_all(self.stabilize.root))
+        print(pad, self.UTXOdb.print())
 
     def add_block(self, block, genesis=False):
         if genesis:
-            self.insert_block_in_chain(block)
+            self.prev_block_hash = block.hash
+            reorg_dict = self.stabilize.add(block)
+            if reorg_dict:
+                print("[?] Error: No reorganization in gensis")
+            
+            for txn in block.txns[1:]:
+                for inp_txn in txn.inp_txns:
+                    self.UTXOdb.remove_by_txnid(inp_txn.txnid, inp_txn.vout)
+            for txn in block.txns:
+                self.UTXOdb.add_by_txn(txn)
+
+            self.update_txn_pool(block.txns[1:])
         else:
             if not self.verify_block(block):
-                print("not verified") 
                 return False
             self.insert_block_in_chain(block)
         return True
@@ -66,16 +77,14 @@ class Blockchain:
             2.2 diff of output and input amount == reward in coinbase txn of block
         this means: block is correct.
         """
-
         serial = block.get_serialized_block_header(block.nonce)
-        print("#1")
+        
         # verifying hash of block
         hash_hex = double_sha256(serial)
         if not (hash_hex == block.hash and 
             block.merkle_root == block.get_merkle_root_hash()):
             return False
 
-        print("#2")
         # block.txns[0] is coinbase [ASSUMPTION]
         coinbase_future_reward = 0.0
         for txn in block.txns[1:]:
@@ -83,7 +92,7 @@ class Blockchain:
             for inp_txn in txn.inp_txns:
                 if not self.UTXOdb.search_by_txnid(inp_txn.txnid, inp_txn.vout):
                     return False
-        
+
                 output_txn = self.UTXOdb.get_txn_by_txnid(inp_txn.txnid).out_txns[inp_txn.vout]
                 if not ScriptInterpreter.verify_pay_to_pubkey_hash(
                     inp_txn.signature_script,
@@ -102,18 +111,16 @@ class Blockchain:
                 return False
             coinbase_future_reward += (input_amount - output_amount)
 
-        print("#3")
         # verify coinbase
         coinbase = block.txns[0]
         if not ((len(coinbase.inp_txns) == 1) and (int(coinbase.inp_txns[0].txnid, 16) == 0)
-                        and (int(coinbase.inp_txns[0].vout, 16) == -1)
+                        and (int(coinbase.inp_txns[0].vout) == -1)
                         and (len(coinbase.out_txns) == 1)):
             return False
-        print("#4")
-        if coinbase.out_txns[0].amount > coinbase_future_reward:
+        
+        if coinbase.out_txns[0].amount > coinbase_future_reward + config.reward:
             return False
 
-        print("#5")
         return True
 
     def update_txn_pool(self, txns):
@@ -122,12 +129,12 @@ class Blockchain:
             txn_hashmap[txn.txnid] = True
 
         remove_pool = []
-        for txn in self.node.waiting_txn_pool:
-            if txn in txn_hashmap:
-                remove_pool.append(txn)
+        for i, txn in enumerate(self.node.waiting_txn_pool):
+            if txn.txnid in txn_hashmap:
+                remove_pool.append(i)
 
-        for txn in remove_pool:
-            self.node.waiting_txn_pool.remove(txn)
+        for rem_index in remove_pool:
+            del self.node.waiting_txn_pool[rem_index]
 
     def insert_block_in_chain(self, block):
         """

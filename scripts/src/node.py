@@ -25,6 +25,7 @@ class Node:
         self.blockchain = Blockchain(self.database_UTXO, self)
 
         self.recieved_txn_ids = []
+        self.proof = None
 
     def __str__(self):
         return self.blockchain.__str__()
@@ -41,15 +42,16 @@ class Node:
     def start_mining(self):
         while True:
             if not self.waiting_txn_pool:
-                print("thread: {} [sleeping]".format(current_thread()))
+                print("thread: {} [slept]".format(current_thread().name))
                 time.sleep(5)
+                print("thread: {} [woke]".format(current_thread().name))
                 self.check_messages()
                 continue
 
             new_txn_pool = self.waiting_txn_pool.copy()
             self.waiting_txn_pool = []
 
-            coinbase_txn = 
+            coinbase_txn = transaction.TXN.create_coinbase_txn(self.keys)
             self.current_block = block.Block([coinbase_txn] + [txn for txn in new_txn_pool], self.blockchain.prev_block_hash)
             self.calculate_proof()
 
@@ -112,11 +114,10 @@ class Node:
     def receive_txn(self, txn):
         ret = self.blockchain.verify_txn(txn)
         if not ret:
-            print("T: {} TXN false".format(current_thread()))
+            print("T: {} TXN false".format(current_thread().name))
         self.waiting_txn_pool.append(txn)
 
     def calculate_proof(self):
-        self.check_messages()
         self.proof = Proof(self.current_block)
         work = 0
         while True:
@@ -140,7 +141,7 @@ class Node:
             with self.lock:
                 msg_type, msg = self.messages.popleft()
             
-            print("T: ", current_thread(), " type: {}".format(msg_type))
+            print("T: ", current_thread().name, " type: {}".format(msg_type))
             if msg_type == "txn":
                 _txn = msg.create_copy()
                 self.receive_txn(_txn)
@@ -162,9 +163,10 @@ class Node:
         2. current_block <- txns in block, next current block mem pool
         3. start proof of works
         """
+        # block.print()
         output = self.blockchain.add_block(block)
-        block.print()
         if not output:
             print("[?] Block not added")
         else:
-            self.proof.quit = True
+            if self.proof != None:
+                self.proof.quit = True

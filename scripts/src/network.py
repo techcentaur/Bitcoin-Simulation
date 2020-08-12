@@ -1,4 +1,5 @@
 import node
+import threading
 
 class Network:
     nodes  = [] # star topology

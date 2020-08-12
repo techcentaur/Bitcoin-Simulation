@@ -6,6 +6,7 @@ class Bnode:
         self.parent = parent
         self.height = height
         if block is None:
+            # self.block = B(None, None)
             self.block = Block()
         else:
             self.block = block
@@ -20,7 +21,7 @@ class Bnode:
 
 class Stabilize:
     def __init__(self, orphan_threshold):
-        self.root = Bnode()
+        self.root = None
         self.orphan_threshold = orphan_threshold
 
         self.longest_height = 0
@@ -29,7 +30,7 @@ class Stabilize:
 
     def add(self, b):
         if b.prev_block_hash == "0"*64:
-            self.root.block = b
+            self.root = Bnode([], None, 0, b)
         else:
             return self.__add(self.root, b)
         return []
@@ -147,8 +148,7 @@ class Stabilize:
 
     def print_it_all(self, start):
         print(start)
-        for c in start.children:
-            self.print_it_all(c)
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         return ""
 
 class B:
@@ -183,12 +183,11 @@ if __name__ == '__main__':
     # x = bstab.add(B(7, 6))
     # x = bstab.add(B(8, 7))
     # x = bstab.add(B(9, 8))
+    # bstab.print_it_all(bstab.root)
 
     # # print(bstab.root.children[0].children)
     # # print(bstab.root)
     # print("ORPHAN")
     # on = bstab.check_for_orphan_nodes()
-    # for o in on:
-    #     print(o)
-    # bstab.chains_to_blocks(on)
+    # print(on)
     pass

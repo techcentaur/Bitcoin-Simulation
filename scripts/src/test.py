@@ -11,7 +11,7 @@ def run_thread(n):
 def main():
     Network.create_nodes(num_nodes=2)
     genesis_block = node.Node.create_genesis_block(Network.nodes[0].keys)
-    genesis_block.print()
+    # genesis_block.print()
     # print("gen-txn-id: ", genesis_block.txns[0].txnid)
     Network.nodes[0].coin_recieved_txnid((genesis_block.txns[0].txnid, 0))
 
@@ -36,16 +36,18 @@ def main():
 
     # # # here will add some testing txns by the main threads
     lock = threading.Lock()
-    print("[Address map]", Network.address_map)
+    # print("[Address map]", Network.address_map)
 
     with lock:
         Network.nodes[0].messages.append(("new_txn", (Network.nodes[1].pub_key_hash, 2)))
     # Network.nodes[0].create_txn(Network.address_map[1], 10)
 
-    time.sleep(40)
-    print("2000000000000000000000 over")
+    time.sleep(20)
+
+    
+    print("[#] After transactions all over")
     for n in Network.nodes:
-        print(n)
+        n.print()
 
     # for t in threads:
     #     t.join()

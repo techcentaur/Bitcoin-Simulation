@@ -1,3 +1,3 @@
 arity=2
-bits=5
+bits=3
 reward=50
