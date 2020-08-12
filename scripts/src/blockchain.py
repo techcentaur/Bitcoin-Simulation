@@ -26,7 +26,8 @@ class Blockchain:
         if genesis:
             self.insert_block_in_chain(block)
         else:
-            if not self.verify_block(block): 
+            if not self.verify_block(block):
+                print("not verified") 
                 return False
             self.insert_block_in_chain(block)
         return True
@@ -41,7 +42,7 @@ class Blockchain:
             if not ScriptInterpreter.verify_pay_to_pubkey_hash(
                 inp_txn.signature_script,
                 output_txn.script_pub_key,
-                txn.get_txn_data()
+                inp_txn.txnid
                 ):
                 return False
 
@@ -67,13 +68,14 @@ class Blockchain:
         """
 
         serial = block.get_serialized_block_header(block.nonce)
-    
+        print("#1")
         # verifying hash of block
         hash_hex = double_sha256(serial)
         if not (hash_hex == block.hash and 
             block.merkle_root == block.get_merkle_root_hash()):
             return False
 
+        print("#2")
         # block.txns[0] is coinbase [ASSUMPTION]
         coinbase_future_reward = 0.0
         for txn in block.txns[1:]:
@@ -86,7 +88,7 @@ class Blockchain:
                 if not ScriptInterpreter.verify_pay_to_pubkey_hash(
                     inp_txn.signature_script,
                     output_txn.script_pub_key,
-                    txn.get_txn_data()
+                    inp_txn.txnid
                     ):
                     return False
 
@@ -100,15 +102,18 @@ class Blockchain:
                 return False
             coinbase_future_reward += (input_amount - output_amount)
 
+        print("#3")
         # verify coinbase
         coinbase = block.txns[0]
         if not ((len(coinbase.inp_txns) == 1) and (int(coinbase.inp_txns[0].txnid, 16) == 0)
                         and (int(coinbase.inp_txns[0].vout, 16) == -1)
                         and (len(coinbase.out_txns) == 1)):
             return False
-        if coinbase.out_txns[0].amount > coinbase_future_reward + config.reward:
+        print("#4")
+        if coinbase.out_txns[0].amount > coinbase_future_reward:
             return False
 
+        print("#5")
         return True
 
     def update_txn_pool(self, txns):

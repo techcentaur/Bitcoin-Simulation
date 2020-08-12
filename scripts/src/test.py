@@ -42,9 +42,10 @@ def main():
         Network.nodes[0].messages.append(("new_txn", (Network.nodes[1].pub_key_hash, 2)))
     # Network.nodes[0].create_txn(Network.address_map[1], 10)
 
-    # # time.sleep(20)
-    # # for n in Network.nodes:
-    # #     print(n)
+    time.sleep(40)
+    print("2000000000000000000000 over")
+    for n in Network.nodes:
+        print(n)
 
     # for t in threads:
     #     t.join()

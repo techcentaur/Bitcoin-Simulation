@@ -49,7 +49,8 @@ class Node:
             new_txn_pool = self.waiting_txn_pool.copy()
             self.waiting_txn_pool = []
 
-            self.current_block = block.Block([txn for txn in new_txn_pool], self.blockchain.prev_block_hash)
+            coinbase_txn = 
+            self.current_block = block.Block([coinbase_txn] + [txn for txn in new_txn_pool], self.blockchain.prev_block_hash)
             self.calculate_proof()
 
     def coin_recieved_txnid(self, txndata):
@@ -71,25 +72,20 @@ class Node:
 
         inp_txns = []
         for i in inp_txnids:
-            signature = utils.create_script_sig(self.keys, i[0])
-            inp_txns.append(input_txn.InputTXN(i[0], i[1], signature))
+            script_sig = utils.create_script_sig(self.keys, i[0])
+            inp_txns.append(input_txn.InputTXN(i[0], i[1], script_sig))
 
-        print("x1")
         new_txn = transaction.TXN(inp_txns, out_txns)
         
-        print("x2")
         with self.lock:
             self.messages.append(("txn", new_txn))
 
-        print("x3")
         if is_last_vout_self:
             self.recieved_txn_ids.append((new_txn.txnid, len(new_txn.out_txns)-1))
 
-        print("x4")
         with self.lock:
             network.Network.nodes[network.Network.address_map[reciever_address]].coin_recieved_txnid((new_txn.txnid, 0))
 
-        print("x5")
         with self.lock:
             for n in network.Network.nodes:
                 if n != self:
@@ -153,10 +149,7 @@ class Node:
                 self.recieve_block(block)
             elif msg_type == "new_txn":
                 reciever_address, amount = msg[0], msg[1]
-                print("Inside")
                 ret = self.create_txn(reciever_address, amount)
-                print("Outside")
-                print(ret)
 
     def send_message(self, message):
         with self.lock:
@@ -170,5 +163,8 @@ class Node:
         3. start proof of works
         """
         output = self.blockchain.add_block(block)
-        if(output):
+        block.print()
+        if not output:
+            print("[?] Block not added")
+        else:
             self.proof.quit = True
