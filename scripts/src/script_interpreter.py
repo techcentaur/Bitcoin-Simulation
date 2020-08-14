@@ -15,16 +15,10 @@ class ScriptInterpreter:
         signature = script_signature[:128]
         pub_key = script_signature[128:]
         
-        # print("sig: ", signature)
-        # print("pubkey: ", pub_key)
-        # print("script_signature: ", script_signature)
-        # print("pub-key-script: ", pub_key_script)
-
         pub_hash160 = utils.hash160(pub_key)
         if not (pub_hash160.strip() == pub_key_script.strip()):
             return False
 
-        # print("verifying message: {} ".format(len(message)), message)
         message = str.encode(message)
         vk = VerifyingKey.from_string(bytearray.fromhex(pub_key),
                             curve=ecdsa.SECP256k1)
@@ -35,10 +29,8 @@ class ScriptInterpreter:
         """ message should be of class bytes
             private_key is a hex string
         """
-        # print("ppkey: ", bytearray.fromhex(private_key))
         sk = SigningKey.from_string(bytearray.fromhex(private_key), curve=SECP256k1)
-        # print("createad message: {} ".format(len(message)), message)
+
         signature = sk.sign(str.encode(message))
         signature = bytearray(signature).hex()
-        # print(signature)
         return signature

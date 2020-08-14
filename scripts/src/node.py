@@ -15,8 +15,8 @@ class Node:
     def __init__(self):
         self.keys = utils.generate_ec_key_pairs()
         self.pub_key_hash = utils.hash160(self.keys['public'])
-        
         # self.address = utils.Base58.base58encode(hash160)
+        
         self.waiting_txn_pool = []
         self.lock = Lock()
         self.messages = deque()
@@ -42,9 +42,9 @@ class Node:
     def start_mining(self):
         while True:
             if not self.waiting_txn_pool:
-                print("thread: {} [slept]".format(current_thread().name))
+                # print("T: {} [slept]".format(current_thread().name))
                 time.sleep(5)
-                print("thread: {} [woke]".format(current_thread().name))
+                # print("T: {} [woke]".format(current_thread().name))
                 self.check_messages()
                 continue
 
@@ -132,7 +132,8 @@ class Node:
 
         self.current_block.nonce = work.nonce
         self.current_block.hash = work.hash
-
+        self.current_block.print()
+        print("T: ", current_thread().name, "[MINED] [BLOCK]")
         self.blockchain.add_block(self.current_block)
         network.Network.distribute_block(self.current_block, self)
 
@@ -141,14 +142,16 @@ class Node:
             with self.lock:
                 msg_type, msg = self.messages.popleft()
             
-            print("T: ", current_thread().name, " type: {}".format(msg_type))
             if msg_type == "txn":
+                print("T: ", current_thread().name, "[RECEIVED] [TXN]")
                 _txn = msg.create_copy()
                 self.receive_txn(_txn)
             elif msg_type == "block":
+                print("T: ", current_thread().name, "[RECEIVED] [BLOCK]")
                 block = msg.create_copy()
                 self.recieve_block(block)
             elif msg_type == "new_txn":
+                print("T: ", current_thread().name, "[CREATED] [TXN]")
                 reciever_address, amount = msg[0], msg[1]
                 ret = self.create_txn(reciever_address, amount)
 

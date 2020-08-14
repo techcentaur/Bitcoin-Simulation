@@ -22,6 +22,4 @@ class OutputTXN:
         print()
 
 if __name__ == "__main__":
-	# output_txn = OutputTXN(314, "abcdef123456")
-	# print(output_txn.get_txn_output_data())
     pass

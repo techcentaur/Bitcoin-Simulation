@@ -9,8 +9,7 @@ class Proof:
     def __init__(self, block):
         self.quit = False
         self.block = block
-        self.target_hash = hex(int("0"*block.bits + "1" + "0"*(255 - block.bits*4), 2))[2:]
-        self.target_hash = (64 - len(self.target_hash))*'0' + self.target_hash
+        self.target_hash = "0"*block.bits + "1" + "0"*(64 - block.bits)
 
     def run(self, start):
         for nonce in range(start+1, sys.maxsize): # 2^63-1

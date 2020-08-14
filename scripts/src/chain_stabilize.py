@@ -148,7 +148,6 @@ class Stabilize:
 
     def print_it_all(self, start):
         print(start)
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         return ""
 
 class B:

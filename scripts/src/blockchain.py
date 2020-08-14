@@ -128,13 +128,12 @@ class Blockchain:
         for txn in txns:
             txn_hashmap[txn.txnid] = True
 
-        remove_pool = []
+        new_pool = []
         for i, txn in enumerate(self.node.waiting_txn_pool):
-            if txn.txnid in txn_hashmap:
-                remove_pool.append(i)
+            if not txn.txnid in txn_hashmap:
+                new_pool.append(txn)
 
-        for rem_index in remove_pool:
-            del self.node.waiting_txn_pool[rem_index]
+        self.node.waiting_txn_pool = [x for x in new_pool]
 
     def insert_block_in_chain(self, block):
         """

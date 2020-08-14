@@ -8,10 +8,11 @@ def run_thread(n):
     while True:
         n.start_mining()
 
+
 def main():
-    Network.create_nodes(num_nodes=2)
+    Network.create_nodes(num_nodes=5)
     genesis_block = node.Node.create_genesis_block(Network.nodes[0].keys)
-    # genesis_block.print()
+    genesis_block.print()
     # print("gen-txn-id: ", genesis_block.txns[0].txnid)
     Network.nodes[0].coin_recieved_txnid((genesis_block.txns[0].txnid, 0))
 
@@ -38,16 +39,31 @@ def main():
     lock = threading.Lock()
     # print("[Address map]", Network.address_map)
 
+    def make_txn(from_i, to_i, amount):
+        print("[****************------ CREATING-TXN-----************]")
+        Network.nodes[from_i].messages.append(("new_txn", (Network.nodes[to_i].pub_key_hash, amount)))
+        print("[#] From: ", Network.nodes[from_i].pub_key_hash)
+        print("[#] To: ", Network.nodes[to_i].pub_key_hash)
+        print("[+] Amount: ", amount)
+
     with lock:
-        Network.nodes[0].messages.append(("new_txn", (Network.nodes[1].pub_key_hash, 2)))
+        make_txn(0, 1, 10)
+        make_txn(0, 2, 10)
+    
+    time.sleep(20)
+    with lock:
+        make_txn(1, 2, 5)
+        make_txn(2, 0, 5)
+
     # Network.nodes[0].create_txn(Network.address_map[1], 10)
 
-    time.sleep(20)
+    time.sleep(50)
 
-    
+
     print("[#] After transactions all over")
     for n in Network.nodes:
         n.print()
+        print(n)
 
     # for t in threads:
     #     t.join()
