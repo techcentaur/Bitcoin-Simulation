@@ -26,6 +26,7 @@ class Node:
 
         self.recieved_txn_ids = []
         self.proof = None
+        self.run_now = True
 
     def __str__(self):
         return self.blockchain.__str__()
@@ -40,7 +41,7 @@ class Node:
         self.blockchain.print(pad + "    ")
 
     def start_mining(self):
-        while True:
+        while self.run_now:
             if not self.waiting_txn_pool:
                 # print("T: {} [slept]".format(current_thread().name))
                 time.sleep(5)
